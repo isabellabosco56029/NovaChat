@@ -183,12 +183,13 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ======= ЭНДПОИНТ /me ДЛЯ ФРОНТА (кто я) =======
+// ======= ИНФОРМАЦИЯ О ТЕКУЩЕМ ПОЛЬЗОВАТЕЛЕ =======
 
 app.get("/me", (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ loggedIn: false });
   }
+
   res.json({
     loggedIn: true,
     id: req.session.user.id,
@@ -196,7 +197,141 @@ app.get("/me", (req, res) => {
   });
 });
 
-// ======= ВЫХОД =======
+
+// ======= СПИСОК ЛИЧНЫХ ЧАТОВ ПОЛЬЗОВАТЕЛЯ =======
+
+app.get("/chats/list", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ ok: false, error: "Не авторизован" });
+  }
+
+  const userId = req.session.user.id;
+
+  try {
+    const result = await pool.query(
+      `
+      SELECT
+        c.id,
+        c.created_at,
+        u.username AS peer_username
+      FROM chats c
+      JOIN chat_members cm_self
+        ON cm_self.chat_id = c.id
+      JOIN chat_members cm_peer
+        ON cm_peer.chat_id = c.id AND cm_peer.user_id <> cm_self.user_id
+      JOIN users u
+        ON u.id = cm_peer.user_id
+      WHERE cm_self.user_id = $1
+      ORDER BY c.created_at DESC;
+      `,
+      [userId]
+    );
+
+    res.json({ ok: true, chats: result.rows });
+  } catch (err) {
+    console.error("Ошибка при получении списка чатов:", err);
+    res.status(500).json({ ok: false, error: "Ошибка сервера" });
+  }
+});
+
+
+// ======= СОЗДАНИЕ ЛИЧНОГО ЧАТА ПО ЛОГИНУ =======
+
+app.post("/chats/new", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ ok: false, error: "Не авторизован" });
+  }
+
+  const myId = req.session.user.id;
+  const { username } = req.body;
+
+  if (!username) {
+    return res
+      .status(400)
+      .json({ ok: false, error: "Укажите логин пользователя" });
+  }
+
+  try {
+    // Получаем свой логин
+    const selfUser = await pool.query(
+      "SELECT username FROM users WHERE id = $1",
+      [myId]
+    );
+
+    // Запрет чата с самим собой
+    if (
+      selfUser.rowCount > 0 &&
+      selfUser.rows[0].username === username
+    ) {
+      return res
+        .status(400)
+        .json({ ok: false, error: "Нельзя создать чат с самим собой" });
+    }
+
+    // Ищем другого пользователя
+    const other = await pool.query(
+      "SELECT id, username FROM users WHERE username = $1",
+      [username]
+    );
+
+    if (other.rowCount === 0) {
+      return res
+        .status(404)
+        .json({ ok: false, error: "Пользователь не найден" });
+    }
+
+    const otherId = other.rows[0].id;
+
+    // Проверяем, есть ли уже чат
+    const existing = await pool.query(
+      `
+      SELECT c.id
+      FROM chats c
+      JOIN chat_members cm1 ON cm1.chat_id = c.id AND cm1.user_id = $1
+      JOIN chat_members cm2 ON cm2.chat_id = c.id AND cm2.user_id = $2
+      LIMIT 1;
+      `,
+      [myId, otherId]
+    );
+
+    if (existing.rowCount > 0) {
+      return res.json({
+        ok: true,
+        existing: true,
+        chatId: existing.rows[0].id,
+        peerUsername: other.rows[0].username,
+      });
+    }
+
+    // Создаём новый чат
+    const chatInsert = await pool.query(
+      "INSERT INTO chats DEFAULT VALUES RETURNING id"
+    );
+
+    const chatId = chatInsert.rows[0].id;
+
+    await pool.query(
+      `
+      INSERT INTO chat_members (chat_id, user_id)
+      VALUES ($1, $2), ($1, $3);
+      `,
+      [chatId, myId, otherId]
+    );
+
+    res.json({
+      ok: true,
+      existing: false,
+      chatId,
+      peerUsername: other.rows[0].username,
+    });
+  } catch (err) {
+    console.error("Ошибка при создании чата:", err);
+    res.status(500).json({ ok: false, error: "Ошибка сервера" });
+  }
+});
+
+
+// ======= ВЫХОД И УДАЛЕНИЕ АККАУНТА =======
 
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
@@ -204,27 +339,21 @@ app.post("/logout", (req, res) => {
   });
 });
 
-// ======= УДАЛЕНИЕ АККАУНТА =======
-
 app.post("/delete-account", async (req, res) => {
   if (!req.session.user) {
     return res.redirect("/login.html");
   }
 
-  const userId = req.session.user.id;
-
   try {
-    await pool.query("DELETE FROM users WHERE id = $1", [userId]);
-    console.log("Пользователь удалён:", userId);
-
+    await pool.query("DELETE FROM users WHERE id = $1", [
+      req.session.user.id,
+    ]);
     req.session.destroy(() => {
       res.redirect("/register.html");
     });
   } catch (err) {
-    console.error("Ошибка при удалении аккаунта:", err);
-    res.send(
-      "Не удалось удалить аккаунт. Попробуйте позже. <a href='/chat'>Назад в чат</a>"
-    );
+    console.error(err);
+    res.send("Ошибка при удалении аккаунта");
   }
 });
 
@@ -291,6 +420,7 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
