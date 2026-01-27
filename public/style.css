@@ -584,6 +584,30 @@ form input[type="password"] {
     font-size: 13px;
     padding: 8px 14px;
   }
+
+  .empty-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  color: #9ca3af;
+  }
+
+  .empty-state h2 {
+  margin: 0;
+  font-size: 18px;
+  color: #e5e7eb;
+  }
+
+  .empty-state p {
+  margin: 0;
+  font-size: 14px;
+  color: #6b7280;
+  }
 }
+
 
 
