@@ -512,44 +512,79 @@ form input[type="password"] {
 /* Адаптив */
 
 @media (max-width: 900px) {
+  /* Основной контейнер приложения — одна колонка */
   .app {
     grid-template-columns: minmax(0, 1fr);
     height: auto;
+    margin: 12px auto;
+    padding: 0 8px;
   }
 
+  /* Сайдбар становится верхней панелью */
   .sidebar {
     flex-direction: row;
     align-items: center;
+    justify-content: space-between;
     gap: 12px;
-    padding: 10px;
+    padding: 10px 12px;
   }
 
   .current-user {
     flex: 1;
+    margin: 0 8px;
   }
 
+  /* Прячем список чатов и футер сайдбара — на телефоне не до этого */
   .chat-list,
   .sidebar-footer,
   .sidebar-section-title {
     display: none;
   }
 
+  /* Основной чат под панелью, почти на весь экран */
   .chat-main {
     margin-top: 8px;
+    height: calc(100vh - 220px);
   }
 }
 
 @media (max-width: 640px) {
-  .landing {
-    grid-template-columns: 1fr;
+  /* Шапка сайта компактнее */
+  .header {
+    padding: 10px 16px;
   }
 
-  .app {
-    margin: 12px auto;
-    padding: 0 8px;
+  .header h1 {
+    font-size: 18px;
+  }
+
+  .header nav {
+    gap: 8px;
+  }
+
+  /* Лэндинг (главная) — одна колонка */
+  .landing {
+    grid-template-columns: 1fr;
+    gap: 16px;
   }
 
   .auth-card {
-    margin: 24px auto;
+    margin: 16px auto;
+    padding: 16px 16px 20px;
+  }
+
+  /* Чуть уменьшаем элементы для телефона */
+  .chat-main-input input {
+    font-size: 13px;
+  }
+
+  .btn-primary,
+  .btn-secondary,
+  .btn-ghost {
+    font-size: 13px;
+    padding: 8px 14px;
   }
 }
+
+}
+
