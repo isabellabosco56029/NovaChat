@@ -44,6 +44,23 @@ async function initDb() {
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
+  
+// Таблица чатов
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS chats (
+    id SERIAL PRIMARY KEY,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+  );
+`);
+
+// Участники чатов
+await pool.query(`
+  CREATE TABLE IF NOT EXISTS chat_members (
+    chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    PRIMARY KEY (chat_id, user_id)
+  );
+`);
 
   console.log("База данных инициализирована (users + messages готовы)");
 }
@@ -273,5 +290,6 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
