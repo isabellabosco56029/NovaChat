@@ -88,7 +88,16 @@
     const form = document.getElementById("chat-form");
     const input = document.getElementById("message-input");
     const currentUsernameSpan = document.getElementById("current-username");
-
+    
+ // Клик по "NovaChat" в сайдбаре — переход на главную
+  const logoHeader = document.querySelector(".sidebar-header");
+  if (logoHeader) {
+    logoHeader.style.cursor = "pointer";
+    logoHeader.addEventListener("click", () => {
+      window.location.href = "/";
+    });
+  }
+    
     let currentUser = null;
 
     // Узнаём, кто вошёл
@@ -166,5 +175,6 @@
   </script>
 </body>
 </html>
+
 
 
