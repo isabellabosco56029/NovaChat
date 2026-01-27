@@ -36,48 +36,6 @@
   <footer class="footer">
     <p>&copy; 2026 Школа №1</p>
   </footer>
-    <script>
-    const form = document.querySelector("form");
-    const usernameInput = document.querySelector('input[name="username"]');
-    const submitButton = form.querySelector('button[type="submit"]');
-
-    // Проверяем, есть ли уже аккаунт на этом устройстве
-    const existingUser = localStorage.getItem("registeredUser");
-
-    if (existingUser) {
-      // Показываем сообщение и блокируем форму
-      const info = document.createElement("p");
-      info.style.color = "red";
-      info.style.marginTop = "10px";
-      info.textContent =
-        "На этом устройстве уже зарегистрирован аккаунт: " +
-        existingUser +
-        ". Создание второго аккаунта запрещено.";
-
-      form.parentElement.appendChild(info);
-      submitButton.disabled = true;
-    }
-
-    form.addEventListener("submit", function (e) {
-      const already = localStorage.getItem("registeredUser");
-      if (already) {
-        // На всякий случай ещё раз блокируем
-        e.preventDefault();
-        alert(
-          "На этом устройстве уже есть аккаунт: " +
-            already +
-            ". Второй создать нельзя."
-        );
-        return;
-      }
-
-      const username = usernameInput.value.trim();
-      if (username) {
-        // Запоминаем логин на этом устройстве
-        localStorage.setItem("registeredUser", username);
-      }
-      // Дальше форма отправится на сервер как обычно
-    });
-  </script>
 </body>
 </html>
+
