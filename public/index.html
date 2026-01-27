@@ -82,13 +82,12 @@
 
         // Пользователь залогинен:
         // 1) кнопка "Создать аккаунт" теперь ведёт в чат
-if (registerBtn) {
-  registerBtn.textContent = "Перейти в чат";
-  registerBtn.setAttribute("href", "/chat");
-}
+        if (registerBtn) {
+        registerBtn.textContent = "Перейти в чат";
+        registerBtn.setAttribute("href", "/chat");
+        }
 
-
-        // 2) меняем навигацию в шапке на "Открыть чат"
+        // 2) шапка: только "Открыть чат"
         if (headerNav) {
           headerNav.innerHTML = '<a href="/chat">Открыть чат</a>';
         }
@@ -144,6 +143,7 @@ if (registerBtn) {
 </script>
 </body>
 </html>
+
 
 
 
