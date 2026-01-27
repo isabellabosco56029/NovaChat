@@ -2,44 +2,74 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Школьный мессенджер</title>
+  <title>NovaChat — чат</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
-  <header class="header">
-    <h1>Школьный мессенджер</h1>
-    <nav>
-      <a href="/">Главная</a>
-      <!-- В чате показываем только выход -->
-      <form id="logout-form" action="/logout" method="POST" style="display: inline;">
-        <button type="submit" class="logout-btn">Выйти</button>
-      </form>
-    </nav>
-  </header>
-
-  <main class="container">
-    <div class="chat-card">
-      <div class="chat-header">
-        <label>Вы вошли как:</label>
-        <input id="username" type="text" readonly />
+  <div class="app">
+    <aside class="sidebar">
+      <div class="sidebar-header">
+        <div class="logo-circle">N</div>
+        <div class="logo-text">
+          <div class="logo-name">NovaChat</div>
+          <div class="logo-subtitle">онлайн-мессенджер</div>
+        </div>
       </div>
 
-      <div id="messages" class="chat-messages"></div>
+      <div class="current-user">
+        <span class="current-user-label">Вы:</span>
+        <span class="current-user-name" id="current-username">...</span>
+      </div>
 
-      <form id="chat-form" class="chat-form">
+      <div class="sidebar-section-title">Чаты</div>
+      <ul class="chat-list">
+        <li class="chat-item chat-item-active">
+          <div class="chat-avatar">GC</div>
+          <div class="chat-meta">
+            <div class="chat-name">Общий чат</div>
+            <div class="chat-last">Мгновенные сообщения</div>
+          </div>
+        </li>
+      </ul>
+
+      <div class="sidebar-footer">
+        <form action="/logout" method="POST">
+          <button type="submit" class="btn-secondary">Выйти</button>
+        </form>
+        <form
+          action="/delete-account"
+          method="POST"
+          onsubmit="return confirm('Точно удалить аккаунт? Это действие необратимо.');"
+        >
+          <button type="submit" class="btn-ghost">Удалить аккаунт</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="chat-main">
+      <header class="chat-main-header">
+        <div>
+          <div class="chat-main-title">Общий чат</div>
+          <div class="chat-main-subtitle">Все сообщения в одном месте</div>
+        </div>
+      </header>
+
+      <section id="messages" class="chat-main-messages"></section>
+
+      <form id="chat-form" class="chat-main-input">
         <input
           id="message-input"
           type="text"
-          placeholder="Введите сообщение..."
+          placeholder="Напишите сообщение..."
           autocomplete="off"
         />
-        <button type="submit">Отправить</button>
+        <button type="submit" class="btn-primary">Отправить</button>
       </form>
-    </div>
-  </main>
+    </main>
+  </div>
 
   <footer class="footer">
-    <p>&copy; 2026 Школа №1</p>
+    <p>&copy; 2026 NovaChat</p>
   </footer>
 
   <script src="/socket.io/socket.io.js"></script>
@@ -49,16 +79,15 @@
     const messagesDiv = document.getElementById("messages");
     const form = document.getElementById("chat-form");
     const input = document.getElementById("message-input");
-    const usernameInput = document.getElementById("username");
+    const currentUsernameSpan = document.getElementById("current-username");
 
     let currentUser = null;
 
-    // Узнаём, кто вошёл, через /me
+    // Узнаём, кто вошёл
     function loadCurrentUser() {
       fetch("/me")
         .then((res) => {
           if (res.status === 401) {
-            // Не авторизован — на страницу входа
             window.location.href = "/login.html";
             return null;
           }
@@ -67,7 +96,7 @@
         .then((data) => {
           if (!data) return;
           currentUser = data.username;
-          usernameInput.value = currentUser;
+          currentUsernameSpan.textContent = currentUser;
         })
         .catch(() => {
           window.location.href = "/login.html";
@@ -76,13 +105,17 @@
 
     loadCurrentUser();
 
-    // Функция для добавления сообщения в чат
     function addMessage(msg) {
       const el = document.createElement("div");
       el.classList.add("message");
 
+      const isMe = msg.author === currentUser;
+      if (isMe) {
+        el.classList.add("me");
+      }
+
       const author = document.createElement("strong");
-      author.textContent = msg.author ? msg.author + ": " : "Аноним: ";
+      author.textContent = msg.author ? msg.author : "Аноним";
 
       const text = document.createElement("span");
       text.textContent = msg.text;
@@ -94,35 +127,31 @@
       el.appendChild(author);
       el.appendChild(text);
       el.appendChild(time);
-      messagesDiv.appendChild(el);
 
+      messagesDiv.appendChild(el);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    // История сообщений
     socket.on("chat-history", (history) => {
       messagesDiv.innerHTML = "";
       history.forEach(addMessage);
     });
 
-    // Новое сообщение от сервера
     socket.on("chat-message", (msg) => {
       addMessage(msg);
     });
 
-    // Отправка сообщения
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const text = input.value.trim();
-      if (!text) return;
+      if (!text || !currentUser) return;
 
-      const author = currentUser || "Аноним";
       const time = new Date().toLocaleTimeString("ru-RU", {
         hour: "2-digit",
         minute: "2-digit",
       });
 
-      const msg = { author, text, time };
+      const msg = { author: currentUser, text, time };
       socket.emit("chat-message", msg);
       input.value = "";
     });
