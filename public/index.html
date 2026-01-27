@@ -2,32 +2,49 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8" />
-  <title>Школа №1</title>
+  <title>NovaChat — быстрый мессенджер</title>
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
   <header class="header">
-    <h1>Школа №1</h1>
+    <h1>NovaChat</h1>
     <nav>
-      <a href="/">Главная</a>
-      <a href="/chat">Мессенджер</a>
-      <!-- Позже можно добавить: расписание, учителя и т.д. -->
+      <a href="/login.html">Войти</a>
+      <a href="/register.html">Создать аккаунт</a>
     </nav>
   </header>
 
   <main class="container">
-    <h2>Добро пожаловать на сайт школы</h2>
-    <p>Здесь будет информация о школе, новости и ссылки.</p>
-
-    <section>
-      <h3>Мессенджер</h3>
-      <p>Пообщаться с одноклассниками и учителями можно в нашем <a href="/chat">мессенджере</a>.</p>
-    </section>
+    <div class="landing">
+      <div class="landing-text">
+        <h2>Современный мессенджер в браузере</h2>
+        <p>
+          Реальное время, лаконичный интерфейс и только главное — переписка.
+        </p>
+        <div class="landing-actions">
+          <a href="/login.html" class="btn-primary">Открыть NovaChat</a>
+          <a href="/register.html" class="btn-secondary">Создать аккаунт</a>
+        </div>
+      </div>
+      <div class="landing-preview">
+        <div class="preview-window">
+          <div class="preview-header">
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="dot"></span>
+            <span class="preview-title">Общий чат</span>
+          </div>
+          <div class="preview-messages">
+            <div class="preview-msg left">Привет! NovaChat уже запущен 👋</div>
+            <div class="preview-msg right">Красиво выглядит. Погнали общаться.</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </main>
 
   <footer class="footer">
-    <p>&copy; 2026 Школа №1</p>
+    <p>&copy; 2026 NovaChat</p>
   </footer>
 </body>
 </html>
-
