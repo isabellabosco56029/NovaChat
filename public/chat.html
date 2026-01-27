@@ -126,6 +126,14 @@
     }
 
     loadCurrentUser();
+    
+    const newChatBtn = document.getElementById("new-chat-btn");
+
+if (newChatBtn) {
+  newChatBtn.addEventListener("click", () => {
+    alert("Здесь скоро будет создание личного чата 🙂");
+  });
+}
 
     function addMessage(msg) {
       const el = document.createElement("div");
@@ -180,6 +188,7 @@
   </script>
 </body>
 </html>
+
 
 
 
