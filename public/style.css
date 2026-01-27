@@ -1,126 +1,296 @@
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-  background: #f3f4f6;
+/* Базовая тема */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
 }
 
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
+  background: radial-gradient(circle at top, #1e293b 0, #020617 55%);
+  color: #e5e7eb;
+}
+
+/* Шапка */
+
 .header {
-  background: #1f2937;
-  color: #fff;
-  padding: 10px 20px;
   display: flex;
-  align-items: center;
   justify-content: space-between;
+  align-items: center;
+  padding: 12px 32px;
+  background: rgba(15, 23, 42, 0.95);
+  border-bottom: 1px solid #1f2937;
+  backdrop-filter: blur(10px);
 }
 
 .header h1 {
   margin: 0;
   font-size: 20px;
+  letter-spacing: 0.03em;
 }
 
-.header nav a {
-  color: #e5e7eb;
-  margin-left: 15px;
-  text-decoration: none;
-}
-
-.header nav a:hover {
-  text-decoration: underline;
-}
-
-.container {
-  max-width: 900px;
-  margin: 20px auto;
-  padding: 0 15px;
-}
-
-.footer {
-  text-align: center;
-  padding: 10px;
-  font-size: 14px;
-  color: #6b7280;
-}
-
-.chat-card {
-  background: #fff;
-  border-radius: 10px;
-  padding: 15px;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+.header nav {
   display: flex;
-  flex-direction: column;
-  height: 70vh;
+  gap: 16px;
+  align-items: center;
 }
 
-.chat-header {
-  margin-bottom: 10px;
-}
-
-.chat-header input {
-  width: 100%;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-}
-
-.chat-messages {
-  flex: 1;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  padding: 10px;
-  overflow-y: auto;
-  background: #f9fafb;
-  margin-bottom: 10px;
-}
-
-.message {
-  margin-bottom: 6px;
-  font-size: 14px;
-}
-
-.message-time {
-  margin-left: 8px;
-  font-size: 11px;
+.header a {
   color: #9ca3af;
+  text-decoration: none;
+  font-size: 14px;
 }
 
-.chat-form {
-  display: flex;
-  gap: 8px;
+.header a:hover {
+  color: #e5e7eb;
 }
 
-.chat-form input {
-  flex: 1;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #d1d5db;
-}
-
-.chat-form button {
-  padding: 8px 14px;
-  border-radius: 6px;
-  border: none;
+.logout-btn,
+.delete-btn {
   cursor: pointer;
-  background: #2563eb;
-  color: #fff;
+  border: none;
+  padding: 6px 12px;
+  border-radius: 999px;
+  font-size: 13px;
   font-weight: 500;
 }
 
-.chat-form button:hover {
-  background: #1d4ed8;
-}
-/* Кнопка выхода */
 .logout-btn {
-  cursor: pointer;
-  border: none;
-  padding: 6px 10px;
-  border-radius: 6px;
   background: #ef4444;
   color: #fff;
-  font-size: 14px;
-  margin-left: 10px;
 }
 
 .logout-btn:hover {
   background: #dc2626;
 }
 
+.delete-btn {
+  background: #6b7280;
+  color: #fff;
+}
+
+.delete-btn:hover {
+  background: #4b5563;
+}
+
+/* Контейнер страниц */
+
+.container {
+  max-width: 1100px;
+  margin: 32px auto;
+  padding: 0 16px;
+}
+
+/* Карточки (общий стиль для чата, форм и т.п.) */
+
+.chat-card {
+  background: rgba(15, 23, 42, 0.95);
+  border-radius: 24px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+  border: 1px solid rgba(148, 163, 184, 0.15);
+  padding: 16px;
+  min-height: 70vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Верхняя панель чата */
+
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 4px 8px 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+  margin-bottom: 8px;
+}
+
+.chat-header label {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+.chat-header input {
+  flex: 1;
+  border-radius: 999px;
+  border: none;
+  padding: 6px 12px;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 13px;
+}
+
+/* Зона сообщений — как в мессенджере */
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  background: radial-gradient(circle at top left, #0f172a 0, #020617 40%, #000 100%);
+  border-radius: 18px;
+}
+
+/* Стили отдельного сообщения (базовый — чужое слева) */
+
+.message {
+  max-width: 70%;
+  display: inline-flex;
+  flex-direction: column;
+  align-self: flex-start;
+  padding: 8px 12px;
+  border-radius: 18px 18px 18px 6px;
+  background: #111827;
+  font-size: 14px;
+  line-height: 1.4;
+  color: #e5e7eb;
+}
+
+.message strong {
+  font-size: 12px;
+  color: #9ca3af;
+  margin-bottom: 2px;
+}
+
+.message span {
+  word-wrap: break-word;
+}
+
+/* Время сообщения */
+
+.message-time {
+  align-self: flex-end;
+  font-size: 11px;
+  color: #9ca3af;
+  margin-top: 2px;
+}
+
+/* Мои сообщения — справа, с другим цветом */
+
+.message.me {
+  align-self: flex-end;
+  border-radius: 18px 18px 6px 18px;
+  background: #2563eb;
+}
+
+.message.me strong {
+  color: #bfdbfe;
+}
+
+.message.me .message-time {
+  color: #dbeafe;
+}
+
+/* Форма отправки */
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(148, 163, 184, 0.2);
+  margin-top: 8px;
+}
+
+.chat-form input {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+.chat-form input::placeholder {
+  color: #6b7280;
+}
+
+.chat-form button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: #22c55e;
+  color: #022c22;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.chat-form button:hover {
+  background: #16a34a;
+}
+
+/* Формы логина / регистрации */
+
+.form-row {
+  margin-bottom: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.form-row label {
+  font-size: 13px;
+  color: #9ca3af;
+}
+
+form input[type="text"],
+form input[type="password"] {
+  padding: 8px 10px;
+  border-radius: 10px;
+  border: 1px solid #1f2937;
+  background: #020617;
+  color: #e5e7eb;
+  font-size: 14px;
+}
+
+form button[type="submit"] {
+  margin-top: 4px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  cursor: pointer;
+  background: #2563eb;
+  color: #eff6ff;
+  font-weight: 500;
+}
+
+form button[type="submit"]:hover {
+  background: #1d4ed8;
+}
+
+/* Футер */
+
+.footer {
+  text-align: center;
+  padding: 16px 0 24px;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Адаптация для телефона */
+
+@media (max-width: 768px) {
+  .header {
+    padding: 10px 16px;
+  }
+
+  .container {
+    margin: 16px auto;
+  }
+
+  .chat-card {
+    min-height: calc(100vh - 120px);
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .chat-messages {
+    border-radius: 12px;
+  }
+}
