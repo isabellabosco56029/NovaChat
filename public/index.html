@@ -49,7 +49,18 @@
   <footer class="footer">
     <p>&copy; 2026 NovaChat</p>
   </footer>
+  
+  <script>
+    if ("serviceWorker" in navigator) {
+      window.addEventListener("load", () => {
+        navigator.serviceWorker
+          .register("/service-worker.js")
+          .catch((err) => console.log("SW registration failed", err));
+      });
+    }
+  </script>
 </body>
 </html>
+
 
 
