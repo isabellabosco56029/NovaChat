@@ -81,13 +81,12 @@
         if (!data.loggedIn) return;
 
         // Пользователь залогинен:
-        // 1) кнопка "Создать аккаунт" теперь ведёт в чат
+        // 1) прячем кнопку "Создать аккаунт" на главной
         if (registerBtn) {
-        registerBtn.textContent = "Перейти в чат";
-        registerBtn.setAttribute("href", "/chat");
+          registerBtn.style.display = "none";
         }
 
-        // 2) шапка: только "Открыть чат"
+        // 2) меняем навигацию в шапке на "Открыть чат"
         if (headerNav) {
           headerNav.innerHTML = '<a href="/chat">Открыть чат</a>';
         }
@@ -143,6 +142,7 @@
 </script>
 </body>
 </html>
+
 
 
 
