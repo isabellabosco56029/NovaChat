@@ -61,6 +61,44 @@
   let deferredPrompt;
   const installBtn = document.getElementById("install-btn");
 
+  // ЭЛЕМЕНТЫ ДЛЯ ИНТЕРФЕЙСА
+  const registerBtn = document.querySelector(
+    ".landing-actions .btn-secondary"
+  );
+  const headerNav = document.querySelector(".header nav");
+
+  // Проверяем, залогинен ли пользователь
+  function checkLogin() {
+    fetch("/me")
+      .then((res) => {
+        if (!res.ok) {
+          // 401 или другая ошибка — считаем, что не залогинен
+          throw new Error("not logged in");
+        }
+        return res.json();
+      })
+      .then((data) => {
+        if (!data.loggedIn) return;
+
+        // Пользователь залогинен:
+        // 1) прячем кнопку "Создать аккаунт" на главной
+        if (registerBtn) {
+          registerBtn.style.display = "none";
+        }
+
+        // 2) меняем навигацию в шапке на "Открыть чат"
+        if (headerNav) {
+          headerNav.innerHTML = '<a href="/chat">Открыть чат</a>';
+        }
+      })
+      .catch(() => {
+        // не залогинен — ничего не делаем
+      });
+  }
+
+  // Запускаем проверку сразу при загрузке
+  checkLogin();
+
   // Регистрация сервис-воркера
   if ("serviceWorker" in navigator) {
     window.addEventListener("load", () => {
@@ -104,6 +142,7 @@
 </script>
 </body>
 </html>
+
 
 
 
