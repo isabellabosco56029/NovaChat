@@ -419,6 +419,7 @@ app.post("/chats/:chatId/messages", async (req, res) => {
         .json({ ok: false, error: "У вас нет доступа к этому чату" });
     }
 
+    // Сохраняем сообщение в БД
     const insertResult = await pool.query(
       `
       INSERT INTO messages (chat_id, author_id, text)
@@ -430,6 +431,7 @@ app.post("/chats/:chatId/messages", async (req, res) => {
 
     const row = insertResult.rows[0];
 
+    // Узнаём логин автора
     const userResult = await pool.query(
       "SELECT username FROM users WHERE id = $1;",
       [userId]
@@ -437,9 +439,10 @@ app.post("/chats/:chatId/messages", async (req, res) => {
     const authorUsername =
       userResult.rowCount > 0 ? userResult.rows[0].username : "Unknown";
 
+    // Объект сообщения, который пойдёт по сокету
     const msg = {
       id: row.id,
-      chatId,
+      chatId,                  // очень важно передавать chatId
       author: authorUsername,
       text: row.text,
       time: new Date(row.created_at).toLocaleTimeString("ru-RU", {
@@ -448,9 +451,10 @@ app.post("/chats/:chatId/messages", async (req, res) => {
       }),
     };
 
-    // Отправляем сообщение всем в комнате этого чата
+    // 🔥 Отправляем сообщение всем в комнате этого чата
     io.to(`chat:${chatId}`).emit("chat:new-message", msg);
 
+    // Клиенту достаточно "ok"
     return res.json({ ok: true });
   } catch (err) {
     console.error("Ошибка при отправке сообщения:", err);
@@ -542,4 +546,5 @@ app.post("/delete-account", async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
