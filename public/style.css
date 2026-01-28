@@ -572,6 +572,7 @@ form input[type="password"] {
     gap: 8px;
     max-height: 220px;
     overflow-y: auto;
+    overflow-x: hidden;
     padding-bottom: 4px;
   }
 
