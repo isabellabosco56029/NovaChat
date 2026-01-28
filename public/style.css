@@ -455,10 +455,29 @@ form input[type="password"] {
 }
 
 .message-time {
-  align-self: flex-end;
   font-size: 11px;
   color: #6b7280;
   margin-top: 2px;
+}
+
+.message-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-end;
+}
+
+.message-delete {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.message-delete:hover {
+  color: #f87171;
 }
 
 /* Мои сообщения */
@@ -475,6 +494,14 @@ form input[type="password"] {
 
 .message.me .message-time {
   color: #dbeafe;
+}
+
+.message.me .message-delete {
+  color: #bfdbfe;
+}
+
+.message.me .message-delete:hover {
+  color: #fee2e2;
 }
 
 /* Поле ввода */
@@ -514,37 +541,55 @@ form input[type="password"] {
 @media (max-width: 900px) {
   /* Основной контейнер приложения — одна колонка */
   .app {
-    grid-template-columns: minmax(0, 1fr);
+    display: flex;
+    flex-direction: column;
     height: auto;
+    min-height: calc(100vh - 120px);
     margin: 12px auto;
     padding: 0 8px;
   }
 
   /* Сайдбар становится верхней панелью */
   .sidebar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
     padding: 10px 12px;
   }
 
   .current-user {
-    flex: 1;
-    margin: 0 8px;
+    margin: 0;
   }
 
-  /* Прячем список чатов и футер сайдбара — на телефоне не до этого */
-  .chat-list,
-  .sidebar-footer,
   .sidebar-section-title {
-    display: none;
+    margin-top: 0;
+  }
+
+  .chat-list {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chat-item {
+    min-width: 180px;
+    flex: 0 0 auto;
+    background: rgba(2, 6, 23, 0.6);
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    flex-wrap: wrap;
   }
 
   /* Основной чат под панелью, почти на весь экран */
   .chat-main {
     margin-top: 8px;
-    height: calc(100vh - 220px);
+    min-height: calc(100vh - 340px);
   }
 }
 
@@ -576,6 +621,26 @@ form input[type="password"] {
   /* Чуть уменьшаем элементы для телефона */
   .chat-main-input input {
     font-size: 13px;
+  }
+
+  .chat-main-input {
+    flex-direction: column;
+  }
+
+  .chat-main-input button {
+    width: 100%;
+  }
+
+  .chat-list {
+    gap: 6px;
+  }
+
+  .chat-item {
+    min-width: 150px;
+  }
+
+  .sidebar-footer {
+    flex-direction: column;
   }
 
   .btn-primary,
