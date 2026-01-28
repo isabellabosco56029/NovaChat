@@ -26,7 +26,7 @@ const SESSION_SECRET =
 
 // Инициализация БД (создаём таблицу пользователей, если её нет)
 async function initDb() {
-  // Таблица пользователей
+  // 1. Пользователи
   await pool.query(`
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -35,34 +35,39 @@ async function initDb() {
     );
   `);
 
-  // Таблица сообщений общего чата
+  // 2. Чаты
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS chats (
+      id SERIAL PRIMARY KEY,
+      created_at TIMESTAMPTZ DEFAULT NOW()
+    );
+  `);
+
+  // 3. Участники чатов
+  await pool.query(`
+    CREATE TABLE IF NOT EXISTS chat_members (
+      chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+      user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+      PRIMARY KEY (chat_id, user_id)
+    );
+  `);
+
+  // 4. Сообщения (пересоздаём под личные чаты)
+  await pool.query(`DROP TABLE IF EXISTS messages;`);
+
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
-      author TEXT NOT NULL,
+      chat_id INTEGER NOT NULL REFERENCES chats(id) ON DELETE CASCADE,
+      author_id INTEGER NOT NULL REFERENCES users(id) ON DELETE SET NULL,
       text TEXT NOT NULL,
       created_at TIMESTAMPTZ DEFAULT NOW()
     );
   `);
-  
-// Таблица чатов
-await pool.query(`
-  CREATE TABLE IF NOT EXISTS chats (
-    id SERIAL PRIMARY KEY,
-    created_at TIMESTAMPTZ DEFAULT NOW()
-  );
-`);
 
-// Участники чатов
-await pool.query(`
-  CREATE TABLE IF NOT EXISTS chat_members (
-    chat_id INTEGER REFERENCES chats(id) ON DELETE CASCADE,
-    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
-    PRIMARY KEY (chat_id, user_id)
+  console.log(
+    "База данных инициализирована (users, chats, chat_members, messages готовы)"
   );
-`);
-
-  console.log("База данных инициализирована (users + messages готовы)");
 }
 
 initDb().catch((err) => {
@@ -420,6 +425,7 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
