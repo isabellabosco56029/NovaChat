@@ -11,6 +11,27 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+// ======= SOCKET.IO: комнаты для личных чатов =======
+io.on("connection", (socket) => {
+  console.log("Socket connected", socket.id);
+
+  // Пользователь заходит в чат
+  socket.on("join-chat", (chatId) => {
+    if (!chatId) return;
+    socket.join(`chat:${chatId}`);
+  });
+
+  // Пользователь уходит из чата
+  socket.on("leave-chat", (chatId) => {
+    if (!chatId) return;
+    socket.leave(`chat:${chatId}`);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("Socket disconnected:", socket.id);
+  });
+});
+
 // Порт: локально 3000, на Render — тот, который он даёт
 const PORT = process.env.PORT || 3000;
 
@@ -24,7 +45,7 @@ const pool = new Pool({
 const SESSION_SECRET =
   process.env.SESSION_SECRET || "очень_длинная_строка_для_сессий_123";
 
-// Инициализация БД (создаём таблицу пользователей, если её нет)
+// ======= ИНИЦИАЛИЗАЦИЯ БД =======
 async function initDb() {
   // 1. Пользователи
   await pool.query(`
@@ -52,7 +73,7 @@ async function initDb() {
     );
   `);
 
-  // 4. Сообщения — ПОЛНОСТЬЮ ПЕРЕСОЗДАЁМ
+  // 4. Сообщения — WARNING: сейчас пересоздаётся при старте
   await pool.query(`DROP TABLE IF EXISTS messages;`);
 
   await pool.query(`
@@ -82,7 +103,7 @@ app.use(express.json());
 app.use(
   session({
     store: new pgSession({
-      pool: pool, // наш Pool к Postgres
+      pool: pool,
       tableName: "session",
       createTableIfMissing: true,
     }),
@@ -92,29 +113,23 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 7 дней
       sameSite: "lax",
-      secure: false, // за прокси Render можно оставить false
+      secure: false,
     },
   })
 );
 
-// ======= ДАННЫЕ ЧАТА (сообщения пока в памяти) =======
-let messages = []; // { author, text, time }
-
 // ======= РОУТ ДЛЯ ЧАТА (ПРОВЕРКА ВХОДА) =======
-
 app.get("/chat", (req, res) => {
   if (!req.session.user) {
-    // Если не вошёл — отправляем на логин
     return res.redirect("/login.html");
   }
   res.sendFile(path.join(__dirname, "public", "chat.html"));
 });
 
-// Статические файлы (главная, логин, регистрация, стили и т.п.)
+// Статика
 app.use(express.static(path.join(__dirname, "public")));
 
-// ======= РЕГИСТРАЦИЯ (с хешированием пароля, в БД) =======
-
+// ======= РЕГИСТРАЦИЯ =======
 app.post("/register", async (req, res) => {
   const { username, password } = req.body;
 
@@ -151,8 +166,7 @@ app.post("/register", async (req, res) => {
   }
 });
 
-// ======= ВХОД (логин) =======
-
+// ======= ВХОД =======
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
 
@@ -177,7 +191,6 @@ app.post("/login", async (req, res) => {
       );
     }
 
-    // Сохраняем юзера в сессию
     req.session.user = { id: user.id, username: user.username };
 
     console.log("Пользователь вошёл:", user.username);
@@ -188,8 +201,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-// ======= ИНФОРМАЦИЯ О ТЕКУЩЕМ ПОЛЬЗОВАТЕЛЕ =======
-
+// ======= /me =======
 app.get("/me", (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ loggedIn: false });
@@ -202,9 +214,7 @@ app.get("/me", (req, res) => {
   });
 });
 
-
 // ======= СПИСОК ЛИЧНЫХ ЧАТОВ =======
-
 app.get("/chats/list", async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: "Не авторизован" });
@@ -239,9 +249,7 @@ app.get("/chats/list", async (req, res) => {
   }
 });
 
-
-// ======= СОЗДАНИЕ ЛИЧНОГО ЧАТА ПО ЛОГИНУ =======
-
+// ======= СОЗДАНИЕ ЛИЧНОГО ЧАТА =======
 app.post("/chats/new", async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: "Не авторизован" });
@@ -263,10 +271,7 @@ app.post("/chats/new", async (req, res) => {
       [myId]
     );
 
-    if (
-      selfUser.rowCount > 0 &&
-      selfUser.rows[0].username === username
-    ) {
+    if (selfUser.rowCount > 0 && selfUser.rows[0].username === username) {
       return res
         .status(400)
         .json({ ok: false, error: "Нельзя создать чат с самим собой" });
@@ -333,9 +338,7 @@ app.post("/chats/new", async (req, res) => {
   }
 });
 
-
 // ======= ПОЛУЧЕНИЕ СООБЩЕНИЙ ЧАТА =======
-
 app.get("/chats/:chatId/messages", async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: "Не авторизован" });
@@ -383,9 +386,7 @@ app.get("/chats/:chatId/messages", async (req, res) => {
   }
 });
 
-
 // ======= ОТПРАВКА СООБЩЕНИЯ В ЧАТ =======
-
 app.post("/chats/:chatId/messages", async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: "Не авторизован" });
@@ -406,6 +407,7 @@ app.post("/chats/:chatId/messages", async (req, res) => {
   }
 
   try {
+    // Проверяем, что пользователь участник чата
     const memberCheck = await pool.query(
       "SELECT 1 FROM chat_members WHERE chat_id = $1 AND user_id = $2 LIMIT 1;",
       [chatId, userId]
@@ -435,26 +437,28 @@ app.post("/chats/:chatId/messages", async (req, res) => {
     const authorUsername =
       userResult.rowCount > 0 ? userResult.rows[0].username : "Unknown";
 
-    res.json({
-      ok: true,
-      message: {
-        id: row.id,
-        author: authorUsername,
-        text: row.text,
-        time: new Date(row.created_at).toLocaleTimeString("ru-RU", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
-      },
-    });
+    const msg = {
+      id: row.id,
+      chatId,
+      author: authorUsername,
+      text: row.text,
+      time: new Date(row.created_at).toLocaleTimeString("ru-RU", {
+        hour: "2-digit",
+        minute: "2-digit",
+      }),
+    };
+
+    // Отправляем сообщение всем участникам этого чата
+    io.to(`chat:${chatId}`).emit("chat:new-message", msg);
+
+    return res.json({ ok: true });
   } catch (err) {
     console.error("Ошибка при отправке сообщения:", err);
-    res.status(500).json({ ok: false, error: "Ошибка сервера" });
+    return res.status(500).json({ ok: false, error: "Ошибка сервера" });
   }
 });
 
 // ======= ВЫХОД И УДАЛЕНИЕ АККАУНТА =======
-
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
     res.redirect("/login.html");
@@ -467,9 +471,7 @@ app.post("/delete-account", async (req, res) => {
   }
 
   try {
-    await pool.query("DELETE FROM users WHERE id = $1", [
-      req.session.user.id,
-    ]);
+    await pool.query("DELETE FROM users WHERE id = $1", [req.session.user.id]);
     req.session.destroy(() => {
       res.redirect("/register.html");
     });
@@ -479,74 +481,7 @@ app.post("/delete-account", async (req, res) => {
   }
 });
 
-// ======= SOCKET.IO (общий чат с БД сообщений) =======
-
-io.on("connection", (socket) => {
-  console.log("Новое соединение:", socket.id);
-
-  // При подключении отправляем последние 100 сообщений из БД
-  (async () => {
-    try {
-      const result = await pool.query(
-        `
-        SELECT
-          author,
-          text,
-          to_char(created_at, 'HH24:MI') AS time
-        FROM messages
-        ORDER BY created_at ASC
-        LIMIT 100;
-      `
-      );
-
-      socket.emit("chat-history", result.rows);
-    } catch (err) {
-      console.error("Ошибка загрузки истории сообщений:", err);
-    }
-  })();
-
-  // Получаем новое сообщение от клиента
-  socket.on("chat-message", async (msg) => {
-    if (!msg || !msg.author || !msg.text) return;
-
-    try {
-      // Сохраняем сообщение в БД
-      const insertResult = await pool.query(
-        `
-        INSERT INTO messages (author, text)
-        VALUES ($1, $2)
-        RETURNING
-          author,
-          text,
-          to_char(created_at, 'HH24:MI') AS time;
-      `,
-        [msg.author, msg.text]
-      );
-
-      const savedMsg = insertResult.rows[0];
-
-      // Рассылаем всем уже сохранённое сообщение (с нормальным time)
-      io.emit("chat-message", savedMsg);
-    } catch (err) {
-      console.error("Ошибка при сохранении сообщения:", err);
-    }
-  });
-
-  socket.on("disconnect", () => {
-    console.log("Отключился:", socket.id);
-  });
-});
-
 // ======= ЗАПУСК СЕРВЕРА =======
-
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
-
-
-
-
-
-
-
-
