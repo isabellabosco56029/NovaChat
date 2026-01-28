@@ -202,80 +202,81 @@
   }
 
   // РИСУЕМ СПИСОК ЧАТОВ В САЙДБАРЕ
-  function renderChats(chats) {
-    if (!chatList) return;
+ function renderChats(chats) {
+  if (!chatList) return;
 
-    chatList.innerHTML = "";
-    
-    // Нет ни одного чата
-    if (!chats || chats.length === 0) {
-      const li = document.createElement("li");
-      li.style.fontSize = "12px";
-      li.style.color = "#6b7280";
-      li.style.padding = "4px 2px";
-      li.textContent = "У вас пока нет чатов.";
-      chatList.appendChild(li);
+  chatList.innerHTML = "";
 
-      // Шапка для пустого состояния
+  // Нет ни одного чата
+  if (!chats || chats.length === 0) {
+    const li = document.createElement("li");
+    li.style.fontSize = "12px";
+    li.style.color = "#6b7280";
+    li.style.padding = "4px 2px";
+    li.textContent = "У вас пока нет чатов.";
+    chatList.appendChild(li);
+
+    // Шапка для пустого состояния
     if (chatTitleEl) chatTitleEl.textContent = "Добро пожаловать в NovaChat";
     if (chatSubtitleEl)
       chatSubtitleEl.textContent = "Создайте новый чат, чтобы начать переписку.";
-       // И сообщения заменяем на экран приветствия
+
+    // В центре тоже покажем заглушку
     renderMessages([]);
-      
-      return;
-    }
-    
- // Если чаты уже есть — другая шапка
+
+    return;
+  }
+
+  // Если хотя бы один чат есть — другая шапка
   if (chatTitleEl) chatTitleEl.textContent = "NovaChat";
   if (chatSubtitleEl)
     chatSubtitleEl.textContent = "Выберите чат слева, чтобы начать переписку.";
 
-    chats.forEach((chat) => {
-      const li = document.createElement("li");
-      li.classList.add("chat-item");
-      li.dataset.chatId = chat.id;
+  chats.forEach((chat) => {
+    const li = document.createElement("li");
+    li.classList.add("chat-item");
+    li.dataset.chatId = chat.id;
 
-      const avatar = document.createElement("div");
-      avatar.classList.add("chat-avatar");
-      avatar.textContent = chat.peer_username
-        ? chat.peer_username[0].toUpperCase()
-        : "?";
+    const avatar = document.createElement("div");
+    avatar.classList.add("chat-avatar");
+    avatar.textContent = chat.peer_username
+      ? chat.peer_username[0].toUpperCase()
+      : "?";
 
-      const meta = document.createElement("div");
-      meta.classList.add("chat-meta");
+    const meta = document.createElement("div");
+    meta.classList.add("chat-meta");
 
-      const name = document.createElement("div");
-      name.classList.add("chat-name");
-      name.textContent = chat.peer_username;
+    const name = document.createElement("div");
+    name.classList.add("chat-name");
+    name.textContent = chat.peer_username;
 
-      const last = document.createElement("div");
-      last.classList.add("chat-last");
-      last.textContent = "Личный чат";
+    const last = document.createElement("div");
+    last.classList.add("chat-last");
+    last.textContent = "Личный чат";
 
-      meta.appendChild(name);
-      meta.appendChild(last);
-      li.appendChild(avatar);
-      li.appendChild(meta);
+    meta.appendChild(name);
+    meta.appendChild(last);
+    li.appendChild(avatar);
+    li.appendChild(meta);
 
-      li.addEventListener("click", () => {
-        currentChatId = chat.id;
+    li.addEventListener("click", () => {
+      currentChatId = chat.id;
 
-        if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
-        if (chatSubtitleEl)
-          chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
+      if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
+      if (chatSubtitleEl)
+        chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
 
-        document
-          .querySelectorAll(".chat-item")
-          .forEach((el) => el.classList.remove("chat-item-active"));
-        li.classList.add("chat-item-active");
+      document
+        .querySelectorAll(".chat-item")
+        .forEach((el) => el.classList.remove("chat-item-active"));
+      li.classList.add("chat-item-active");
 
-        loadMessages(chat.id);
-      });
-
-      chatList.appendChild(li);
+      loadMessages(chat.id);
     });
-  }
+
+    chatList.appendChild(li);
+  });
+}
 
   // ЗАГРУЖАЕМ СПИСОК ЧАТОВ
   function loadChats() {
@@ -374,6 +375,7 @@
 </script>
 </body>
 </html>
+
 
 
 
