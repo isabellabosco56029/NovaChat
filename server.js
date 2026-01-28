@@ -448,7 +448,7 @@ app.post("/chats/:chatId/messages", async (req, res) => {
       }),
     };
 
-    // Отправляем сообщение всем участникам этого чата
+    // Отправляем сообщение всем в комнате этого чата
     io.to(`chat:${chatId}`).emit("chat:new-message", msg);
 
     return res.json({ ok: true });
@@ -458,7 +458,7 @@ app.post("/chats/:chatId/messages", async (req, res) => {
   }
 });
 
-// ======= УДАЛЕНИЕ СООБЩЕНИЯ =======
+// ======= УДАЛЕНИЕ СООБЩЕНИЯ ИЗ ЧАТА =======
 app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
   if (!req.session.user) {
     return res.status(401).json({ ok: false, error: "Не авторизован" });
@@ -468,15 +468,12 @@ app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
   const chatId = parseInt(req.params.chatId, 10);
   const messageId = parseInt(req.params.messageId, 10);
 
-  if (!chatId || Number.isNaN(chatId)) {
-    return res.status(400).json({ ok: false, error: "Некорректный chatId" });
-  }
-
-  if (!messageId || Number.isNaN(messageId)) {
-    return res.status(400).json({ ok: false, error: "Некорректный messageId" });
+  if (!chatId || Number.isNaN(chatId) || !messageId || Number.isNaN(messageId)) {
+    return res.status(400).json({ ok: false, error: "Некорректные id" });
   }
 
   try {
+    // проверяем, что пользователь участник чата
     const memberCheck = await pool.query(
       "SELECT 1 FROM chat_members WHERE chat_id = $1 AND user_id = $2 LIMIT 1;",
       [chatId, userId]
@@ -488,6 +485,7 @@ app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
         .json({ ok: false, error: "У вас нет доступа к этому чату" });
     }
 
+    // удаляем только СВОЁ сообщение
     const deleteResult = await pool.query(
       `
       DELETE FROM messages
@@ -498,15 +496,16 @@ app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
     );
 
     if (deleteResult.rowCount === 0) {
-      return res.status(404).json({
+      return res.status(403).json({
         ok: false,
-        error: "Сообщение не найдено или у вас нет прав на удаление",
+        error: "Вы можете удалять только свои сообщения",
       });
     }
 
+    // уведомляем всех в этом чате, что сообщение удалено
     io.to(`chat:${chatId}`).emit("chat:delete-message", {
+      id: messageId,
       chatId,
-      messageId,
     });
 
     return res.json({ ok: true });
@@ -543,3 +542,4 @@ app.post("/delete-account", async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
