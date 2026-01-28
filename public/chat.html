@@ -35,7 +35,7 @@
       </button>
 
       <ul class="chat-list" id="chat-list">
-        <!-- Пока нет чатов, список пустой -->
+        <!-- чаты будут подставлены скриптом -->
       </ul>
 
       <div class="sidebar-footer">
@@ -78,9 +78,7 @@
     <p>&copy; 2026 NovaChat</p>
   </footer>
 
-  <!-- socket.io можно оставить, но мы его пока не используем -->
   <script src="/socket.io/socket.io.js"></script>
-
   <script>
     const currentUsernameSpan = document.getElementById("current-username");
     const chatList = document.getElementById("chat-list");
@@ -94,6 +92,8 @@
     const chatTitleEl = document.getElementById("chat-title");
     const chatSubtitleEl = document.getElementById("chat-subtitle");
 
+    const socket = io();
+
     let currentUser = null;
     let currentChatId = null;
 
@@ -105,7 +105,7 @@
       });
     }
 
-    // Переключатель темы (простая заглушка)
+    // Переключатель темы (пока простая заглушка)
     if (themeToggle) {
       themeToggle.addEventListener("click", () => {
         document.body.classList.toggle("light");
@@ -134,7 +134,7 @@
         });
     }
 
-    // РИСУЕМ ОДНО СООБЩЕНИЕ
+    // Рисуем одно сообщение
     function appendMessage(msg) {
       if (!messagesDiv) return;
 
@@ -164,7 +164,7 @@
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
     }
 
-    // ПОКАЗАТЬ "ПУСТОЙ" ЭКРАН
+    // Пустые состояния (нет чатов, нет сообщений и т.п.)
     function showEmptyState(mode) {
       if (!messagesDiv) return;
 
@@ -192,14 +192,13 @@
       messagesDiv.appendChild(empty);
     }
 
-    // РИСУЕМ СПИСОК СООБЩЕНИЙ
+    // Рисуем список сообщений
     function renderMessages(messages) {
       if (!messagesDiv) return;
 
       messagesDiv.innerHTML = "";
 
       if (!messages || messages.length === 0) {
-        // Пустой чат — показываем соответствующую надпись
         showEmptyState("no-messages");
         return;
       }
@@ -207,7 +206,7 @@
       messages.forEach(appendMessage);
     }
 
-    // ЗАГРУЗКА СООБЩЕНИЙ ДЛЯ ВЫБРАННОГО ЧАТА
+    // Загружаем сообщения конкретного чата
     function loadMessages(chatId) {
       if (!chatId) return;
 
@@ -225,94 +224,100 @@
         });
     }
 
-    // РИСУЕМ СПИСОК ЧАТОВ В САЙДБАРЕ
-function renderChats(chats) {
-  if (!chatList) return;
+    // Рисуем список чатов
+    function renderChats(chats) {
+      if (!chatList) return;
 
-  chatList.innerHTML = "";
+      chatList.innerHTML = "";
 
-  // Нет ни одного чата
-  if (!chats || chats.length === 0) {
-    const li = document.createElement("li");
-    li.style.fontSize = "12px";
-    li.style.color = "#6b7280";
-    li.style.padding = "4px 2px";
-    li.textContent = "У вас пока нет чатов.";
-    chatList.appendChild(li);
+      // Нет ни одного чата
+      if (!chats || chats.length === 0) {
+        const li = document.createElement("li");
+        li.style.fontSize = "12px";
+        li.style.color = "#6b7280";
+        li.style.padding = "4px 2px";
+        li.textContent = "У вас пока нет чатов.";
+        chatList.appendChild(li);
 
-    // Шапка и текст в центре для пустого состояния
-    if (chatTitleEl) chatTitleEl.textContent = "Добро пожаловать в NovaChat";
-    if (chatSubtitleEl)
-      chatSubtitleEl.textContent = "Создайте новый чат, чтобы начать переписку.";
+        if (chatTitleEl) chatTitleEl.textContent = "Добро пожаловать в NovaChat";
+        if (chatSubtitleEl)
+          chatSubtitleEl.textContent = "Создайте новый чат, чтобы начать переписку.";
 
-    showEmptyState("no-chats");
+        currentChatId = null;
+        showEmptyState("no-chats");
+        return;
+      }
 
-    // Чатов нет — явно сбрасываем выбранный чат
-    currentChatId = null;
-    return;
-  }
+      // Есть чаты, но ещё ни один не выбран
+      if (!currentChatId) {
+        if (chatTitleEl) chatTitleEl.textContent = "NovaChat";
+        if (chatSubtitleEl)
+          chatSubtitleEl.textContent = "Выберите чат слева, чтобы начать переписку.";
+        showEmptyState("select-chat");
+      }
 
-  // Есть хотя бы один чат
-  // Если ещё НИ ОДИН чат не выбран — показываем экран "выберите чат"
-  if (!currentChatId) {
-    if (chatTitleEl) chatTitleEl.textContent = "NovaChat";
-    if (chatSubtitleEl)
-      chatSubtitleEl.textContent = "Выберите чат слева, чтобы начать переписку.";
-    showEmptyState("select-chat");
-  }
+      chats.forEach((chat) => {
+        const li = document.createElement("li");
+        li.classList.add("chat-item");
+        li.dataset.chatId = chat.id;
 
-  chats.forEach((chat) => {
-    const li = document.createElement("li");
-    li.classList.add("chat-item");
-    li.dataset.chatId = chat.id;
+        const avatar = document.createElement("div");
+        avatar.classList.add("chat-avatar");
+        avatar.textContent = chat.peer_username
+          ? chat.peer_username[0].toUpperCase()
+          : "?";
 
-    const avatar = document.createElement("div");
-    avatar.classList.add("chat-avatar");
-    avatar.textContent = chat.peer_username
-      ? chat.peer_username[0].toUpperCase()
-      : "?";
+        const meta = document.createElement("div");
+        meta.classList.add("chat-meta");
 
-    const meta = document.createElement("div");
-    meta.classList.add("chat-meta");
+        const name = document.createElement("div");
+        name.classList.add("chat-name");
+        name.textContent = chat.peer_username;
 
-    const name = document.createElement("div");
-    name.classList.add("chat-name");
-    name.textContent = chat.peer_username;
+        const last = document.createElement("div");
+        last.classList.add("chat-last");
+        last.textContent = "Личный чат";
 
-    const last = document.createElement("div");
-    last.classList.add("chat-last");
-    last.textContent = "Личный чат";
+        meta.appendChild(name);
+        meta.appendChild(last);
+        li.appendChild(avatar);
+        li.appendChild(meta);
 
-    meta.appendChild(name);
-    meta.appendChild(last);
-    li.appendChild(avatar);
-    li.appendChild(meta);
+        // Подсветить активный, если он выбран
+        if (currentChatId && chat.id === currentChatId) {
+          li.classList.add("chat-item-active");
+        }
 
-    // Подсветка уже выбранного чата при перерисовке списка
-    if (currentChatId && chat.id === currentChatId) {
-      li.classList.add("chat-item-active");
+        li.addEventListener("click", () => {
+          const prevChatId = currentChatId;
+
+          // отписываемся от предыдущего чата
+          if (prevChatId) {
+            socket.emit("leave-chat", prevChatId);
+          }
+
+          currentChatId = chat.id;
+
+          // подписываемся на новый чат
+          socket.emit("join-chat", chat.id);
+
+          if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
+          if (chatSubtitleEl)
+            chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
+
+          document
+            .querySelectorAll(".chat-item")
+            .forEach((el) => el.classList.remove("chat-item-active"));
+          li.classList.add("chat-item-active");
+
+          loadMessages(chat.id);
+        });
+
+        chatList.appendChild(li);
+      });
     }
 
-    li.addEventListener("click", () => {
-      currentChatId = chat.id;
-
-      if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
-      if (chatSubtitleEl)
-        chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
-
-      document
-        .querySelectorAll(".chat-item")
-        .forEach((el) => el.classList.remove("chat-item-active"));
-      li.classList.add("chat-item-active");
-
-      loadMessages(chat.id);
-    });
-
-    chatList.appendChild(li);
-  });
-}
-    
-    // ЗАГРУЖАЕМ СПИСОК ЧАТОВ
+    // Загружаем список чатов
     function loadChats() {
       fetch("/chats/list")
         .then((res) => {
@@ -328,7 +333,7 @@ function renderChats(chats) {
         });
     }
 
-    // Обработчик кнопки "Создать чат"
+    // Кнопка "Создать чат"
     if (newChatBtn) {
       newChatBtn.addEventListener("click", () => {
         const username = prompt(
@@ -366,7 +371,7 @@ function renderChats(chats) {
       });
     }
 
-    // Отправка сообщения из формы
+    // Отправка сообщения
     if (form && input) {
       form.addEventListener("submit", (e) => {
         e.preventDefault();
@@ -385,17 +390,11 @@ function renderChats(chats) {
           },
           body: JSON.stringify({ text }),
         })
-          .then((res) => res.json())
-          .then((data) => {
-            if (!data.ok) {
-              alert(data.error || "Не удалось отправить сообщение");
-              return;
+          .then((res) => {
+            if (!res.ok) {
+              throw new Error("Ошибка ответа сервера");
             }
-
-            // Перед первым сообщением убираем надпись "нет сообщений"
-            messagesDiv.innerHTML = "";
-
-            appendMessage(data.message);
+            // ответ нам не нужен, сообщение придёт по сокету
             input.value = "";
           })
           .catch(() => {
@@ -404,17 +403,26 @@ function renderChats(chats) {
       });
     }
 
-   // Старт: узнаём пользователя, потом чаты + автообновление
-loadCurrentUser().then(() => {
-  loadChats();
+    // Слушаем новые сообщения по сокету
+    socket.on("chat:new-message", (msg) => {
+      // Если открыт другой чат — игнорируем
+      if (!currentChatId || msg.chatId !== currentChatId) return;
 
-  // Автообновление раз в 5 секунд
-  setInterval(loadChats, 5000);
+      // если на экране был пустой стейт — убираем
+      if (messagesDiv && messagesDiv.querySelector(".empty-state")) {
+        messagesDiv.innerHTML = "";
+      }
 
-  // И ещё подгружаем чаты, когда пользователь возвращается на вкладку
-  window.addEventListener("focus", loadChats);
-});
+      appendMessage(msg);
+    });
+
+    // Старт: узнаём пользователя и подгружаем чаты
+    loadCurrentUser().then(() => {
+      loadChats();
+      // опционально: автообновление списка чатов
+      setInterval(loadChats, 5000);
+      window.addEventListener("focus", loadChats);
+    });
   </script>
 </body>
 </html>
-
