@@ -543,14 +543,10 @@ form input[type="password"] {
   color: #6b7280;
 }
 
-/* ===== Футер ===== */
-
-.footer {
-  text-align: center;
-  padding: 16px 0 24px;
-  font-size: 12px;
-  color: #6b7280;
-}
+/* Футер на телефоне прячем, чтобы не было лишней высоты */
+  .footer {
+    display: none;
+  }
 
 /* ===== Тёмная/светлая тема через body.light ===== */
 
@@ -686,5 +682,6 @@ body.light .message.me {
     padding: 8px 14px;
   }
 }
+
 
 
