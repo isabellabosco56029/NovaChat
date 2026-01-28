@@ -82,6 +82,12 @@
 
   <script src="/socket.io/socket.io.js"></script>
   <script>
+  const socket = io();
+
+let currentUser = null;
+let currentChatId = null;
+let joinedChatId = null; // какой чат сейчас подписан в socket.io
+
   const currentUsernameSpan = document.getElementById("current-username");
   const chatList = document.getElementById("chat-list");
   const newChatBtn = document.getElementById("new-chat-btn");
@@ -127,6 +133,11 @@
   }
 
   function closeChatView() {
+    if (joinedChatId) {
+     socket.emit("leave-chat", joinedChatId);
+    joinedChatId = null;
+  }
+    
     currentChatId = null;
 
     if (appRoot) {
@@ -287,8 +298,17 @@
       li.appendChild(meta);
 
       li.addEventListener("click", () => {
-        currentChatId = chat.id;
+       // отписываемся от предыдущего чата
+  if (joinedChatId && joinedChatId !== chat.id) {
+    socket.emit("leave-chat", joinedChatId);
+  }
 
+  currentChatId = chat.id;
+  joinedChatId = chat.id;
+
+  // подписываемся на новый чат
+  socket.emit("join-chat", chat.id);
+        
         if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
         if (chatSubtitleEl)
           chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
@@ -400,9 +420,20 @@
     loadChats();
     updateInputState();
   });
+    
+      // ====== СОКЕТ: получаем новые сообщения в реальном времени ======
+  // Сообщения приходят с сервера через событие "chat:new-message"
+  // Мы их показываем только если открытый сейчас чат совпадает с chatId сообщения.
+  socket.on("chat:new-message", (msg) => {
+    // если это сообщение не для текущего чата — игнорируем
+    if (msg.chatId !== currentChatId) return;
+
+    appendMessage(msg);
+  });
 </script>
 </body>
 </html>
+
 
 
 
