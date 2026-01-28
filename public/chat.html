@@ -369,16 +369,19 @@ function renderChats(chats) {
         body: JSON.stringify({ text }),
       })
         .then((res) => res.json())
-        .then((data) => {
-          if (!data.ok) {
-            alert(data.error || "Не удалось отправить сообщение");
-            return;
-          }
+.then((data) => {
+  if (!data.ok) {
+    alert(data.error || "Не удалось отправить сообщение");
+    return;
+  }
 
-          // Добавляем отправленное сообщение сразу
-          appendMessage(data.message);
-          input.value = "";
-        })
+  // 🔥 ВАЖНО: убираем empty-state перед первым сообщением
+  messagesDiv.innerHTML = "";
+
+  appendMessage(data.message);
+  input.value = "";
+});
+
         .catch(() => {
           alert("Ошибка сервера при отправке сообщения");
         });
@@ -392,6 +395,7 @@ function renderChats(chats) {
 </script>
 </body>
 </html>
+
 
 
 
