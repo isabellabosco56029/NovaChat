@@ -52,7 +52,7 @@ async function initDb() {
     );
   `);
 
-  // 4. Сообщения (пересоздаём под личные чаты)
+  // 4. Сообщения: УДАЛЯЕМ старую таблицу и создаём новую под личные чаты
   await pool.query(`DROP TABLE IF EXISTS messages;`);
 
   await pool.query(`
@@ -425,6 +425,7 @@ io.on("connection", (socket) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
