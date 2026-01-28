@@ -485,6 +485,37 @@ form input[type="password"] {
 .message.me {
   align-self: flex-end;
   border-radius: 16px 16px 4px 16px;
+.message-time {
+  font-size: 11px;
+  color: #6b7280;
+  margin-top: 2px;
+}
+
+.message-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-end;
+}
+
+.message-delete {
+  border: none;
+  background: transparent;
+  color: #9ca3af;
+  font-size: 11px;
+  cursor: pointer;
+  padding: 0;
+}
+
+.message-delete:hover {
+  color: #f87171;
+}
+
+/* Мои сообщения */
+
+.message.me {
+  align-self: flex-end;
+  border-radius: 16px 16px 4px 16px;
   background: #2563eb;
 }
 
@@ -494,6 +525,14 @@ form input[type="password"] {
 
 .message.me .message-time {
   color: #dbeafe;
+}
+
+.message.me .message-delete {
+  color: #bfdbfe;
+}
+
+.message.me .message-delete:hover {
+  color: #fee2e2;
 }
 
 .message.me .message-delete {
@@ -594,6 +633,71 @@ form input[type="password"] {
     order: 1;
   }
 }
+@media (max-width: 900px) {
+  /* Основной контейнер приложения — одна колонка */
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: auto;
+    min-height: calc(100vh - 120px);
+    margin: 12px auto;
+    padding: 0 8px;
+  }
+
+  /* Сайдбар становится верхней панелью */
+  .sidebar {
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .current-user {
+    margin: 0;
+  }
+
+  .sidebar-section-title {
+    margin-top: 0;
+  }
+
+  .chat-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 8px;
+    max-height: 220px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-bottom: 4px;
+  }
+
+  .chat-item {
+    min-width: 0;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .chat-item {
+    min-width: 180px;
+    flex: 0 0 auto;
+    background: rgba(2, 6, 23, 0.6);
+  }
+
+  .sidebar-footer {
+    flex-direction: row;
+    flex-wrap: wrap;
+  }
+
+  /* Основной чат под панелью, почти на весь экран */
+  .chat-main {
+    margin-top: 8px;
+    min-height: calc(100vh - 340px);
+  }
+}
 
 @media (max-width: 640px) {
   /* Шапка сайта компактнее */
@@ -641,6 +745,33 @@ form input[type="password"] {
 
   .chat-item {
     min-width: 0;
+  }
+
+  .sidebar-footer {
+    flex-direction: column;
+  }
+
+  .chat-main-input {
+    flex-direction: column;
+  }
+
+  .chat-main-input button {
+    width: 100%;
+  }
+
+  .chat-list {
+    grid-template-columns: 1fr;
+    gap: 6px;
+    max-height: 200px;
+  }
+
+  .chat-item {
+    min-width: 0;
+    gap: 6px;
+  }
+
+  .chat-item {
+    min-width: 150px;
   }
 
   .sidebar-footer {
