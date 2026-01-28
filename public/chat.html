@@ -226,83 +226,92 @@
     }
 
     // РИСУЕМ СПИСОК ЧАТОВ В САЙДБАРЕ
-    function renderChats(chats) {
-      if (!chatList) return;
+function renderChats(chats) {
+  if (!chatList) return;
 
-      chatList.innerHTML = "";
+  chatList.innerHTML = "";
 
-      // Нет ни одного чата
-      if (!chats || chats.length === 0) {
-        const li = document.createElement("li");
-        li.style.fontSize = "12px";
-        li.style.color = "#6b7280";
-        li.style.padding = "4px 2px";
-        li.textContent = "У вас пока нет чатов.";
-        chatList.appendChild(li);
+  // Нет ни одного чата
+  if (!chats || chats.length === 0) {
+    const li = document.createElement("li");
+    li.style.fontSize = "12px";
+    li.style.color = "#6b7280";
+    li.style.padding = "4px 2px";
+    li.textContent = "У вас пока нет чатов.";
+    chatList.appendChild(li);
 
-        // Шапка и текст в центре для пустого состояния
-        if (chatTitleEl) chatTitleEl.textContent = "Добро пожаловать в NovaChat";
-        if (chatSubtitleEl)
-          chatSubtitleEl.textContent = "Создайте новый чат, чтобы начать переписку.";
+    // Шапка и текст в центре для пустого состояния
+    if (chatTitleEl) chatTitleEl.textContent = "Добро пожаловать в NovaChat";
+    if (chatSubtitleEl)
+      chatSubtitleEl.textContent = "Создайте новый чат, чтобы начать переписку.";
 
-        showEmptyState("no-chats");
+    showEmptyState("no-chats");
 
-        return;
-      }
+    // Чатов нет — явно сбрасываем выбранный чат
+    currentChatId = null;
+    return;
+  }
 
-      // Есть хотя бы один чат, но конкретный ещё не выбран
-      if (chatTitleEl) chatTitleEl.textContent = "NovaChat";
-      if (chatSubtitleEl)
-        chatSubtitleEl.textContent = "Выберите чат слева, чтобы начать переписку.";
+  // Есть хотя бы один чат
+  // Если ещё НИ ОДИН чат не выбран — показываем экран "выберите чат"
+  if (!currentChatId) {
+    if (chatTitleEl) chatTitleEl.textContent = "NovaChat";
+    if (chatSubtitleEl)
+      chatSubtitleEl.textContent = "Выберите чат слева, чтобы начать переписку.";
+    showEmptyState("select-chat");
+  }
 
-      showEmptyState("select-chat");
+  chats.forEach((chat) => {
+    const li = document.createElement("li");
+    li.classList.add("chat-item");
+    li.dataset.chatId = chat.id;
 
-      chats.forEach((chat) => {
-        const li = document.createElement("li");
-        li.classList.add("chat-item");
-        li.dataset.chatId = chat.id;
+    const avatar = document.createElement("div");
+    avatar.classList.add("chat-avatar");
+    avatar.textContent = chat.peer_username
+      ? chat.peer_username[0].toUpperCase()
+      : "?";
 
-        const avatar = document.createElement("div");
-        avatar.classList.add("chat-avatar");
-        avatar.textContent = chat.peer_username
-          ? chat.peer_username[0].toUpperCase()
-          : "?";
+    const meta = document.createElement("div");
+    meta.classList.add("chat-meta");
 
-        const meta = document.createElement("div");
-        meta.classList.add("chat-meta");
+    const name = document.createElement("div");
+    name.classList.add("chat-name");
+    name.textContent = chat.peer_username;
 
-        const name = document.createElement("div");
-        name.classList.add("chat-name");
-        name.textContent = chat.peer_username;
+    const last = document.createElement("div");
+    last.classList.add("chat-last");
+    last.textContent = "Личный чат";
 
-        const last = document.createElement("div");
-        last.classList.add("chat-last");
-        last.textContent = "Личный чат";
+    meta.appendChild(name);
+    meta.appendChild(last);
+    li.appendChild(avatar);
+    li.appendChild(meta);
 
-        meta.appendChild(name);
-        meta.appendChild(last);
-        li.appendChild(avatar);
-        li.appendChild(meta);
-
-        li.addEventListener("click", () => {
-          currentChatId = chat.id;
-
-          if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
-          if (chatSubtitleEl)
-            chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
-
-          document
-            .querySelectorAll(".chat-item")
-            .forEach((el) => el.classList.remove("chat-item-active"));
-          li.classList.add("chat-item-active");
-
-          loadMessages(chat.id);
-        });
-
-        chatList.appendChild(li);
-      });
+    // Подсветка уже выбранного чата при перерисовке списка
+    if (currentChatId && chat.id === currentChatId) {
+      li.classList.add("chat-item-active");
     }
 
+    li.addEventListener("click", () => {
+      currentChatId = chat.id;
+
+      if (chatTitleEl) chatTitleEl.textContent = chat.peer_username;
+      if (chatSubtitleEl)
+        chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
+
+      document
+        .querySelectorAll(".chat-item")
+        .forEach((el) => el.classList.remove("chat-item-active"));
+      li.classList.add("chat-item-active");
+
+      loadMessages(chat.id);
+    });
+
+    chatList.appendChild(li);
+  });
+}
+    
     // ЗАГРУЖАЕМ СПИСОК ЧАТОВ
     function loadChats() {
       fetch("/chats/list")
@@ -395,10 +404,17 @@
       });
     }
 
-    // Старт: узнаём пользователя, потом чаты
-    loadCurrentUser().then(() => {
-      loadChats();
-    });
+   // Старт: узнаём пользователя, потом чаты + автообновление
+loadCurrentUser().then(() => {
+  loadChats();
+
+  // Автообновление раз в 5 секунд
+  setInterval(loadChats, 5000);
+
+  // И ещё подгружаем чаты, когда пользователь возвращается на вкладку
+  window.addEventListener("focus", loadChats);
+});
   </script>
 </body>
 </html>
+
