@@ -140,6 +140,9 @@
 
       const el = document.createElement("div");
       el.classList.add("message");
+      if (msg.id) {
+        el.dataset.messageId = msg.id;
+      }
 
       const isMe = msg.author === currentUser;
       if (isMe) {
@@ -156,9 +159,49 @@
       timeEl.classList.add("message-time");
       timeEl.textContent = msg.time || "";
 
+      const metaEl = document.createElement("div");
+      metaEl.classList.add("message-meta");
+      metaEl.appendChild(timeEl);
+
+      if (isMe && msg.id) {
+        const deleteBtn = document.createElement("button");
+        deleteBtn.type = "button";
+        deleteBtn.classList.add("message-delete");
+        deleteBtn.textContent = "Удалить";
+        deleteBtn.title = "Удалить сообщение";
+
+        deleteBtn.addEventListener("click", () => {
+          if (!currentChatId) return;
+          const confirmed = confirm("Удалить это сообщение?");
+          if (!confirmed) return;
+
+          fetch(`/chats/${currentChatId}/messages/${msg.id}`, {
+            method: "DELETE",
+          })
+            .then((res) => res.json())
+            .then((data) => {
+              if (!data.ok) {
+                throw new Error(data.error || "Не удалось удалить сообщение");
+              }
+              if (el.parentNode) {
+                el.parentNode.removeChild(el);
+              }
+              if (messagesDiv && messagesDiv.children.length === 0) {
+                showEmptyState("no-messages");
+              }
+            })
+            .catch((err) => {
+              console.error(err);
+              alert("Не удалось удалить сообщение");
+            });
+        });
+
+        metaEl.appendChild(deleteBtn);
+      }
+
       el.appendChild(authorEl);
       el.appendChild(textEl);
-      el.appendChild(timeEl);
+      el.appendChild(metaEl);
 
       messagesDiv.appendChild(el);
       messagesDiv.scrollTop = messagesDiv.scrollHeight;
@@ -414,6 +457,21 @@
       }
 
       appendMessage(msg);
+    });
+
+    socket.on("chat:delete-message", (payload) => {
+      if (!payload || !currentChatId || payload.chatId !== currentChatId) return;
+
+      const messageEl = messagesDiv.querySelector(
+        `[data-message-id="${payload.messageId}"]`
+      );
+      if (messageEl) {
+        messageEl.remove();
+      }
+
+      if (messagesDiv && messagesDiv.children.length === 0) {
+        showEmptyState("no-messages");
+      }
     });
 
     // Старт: узнаём пользователя и подгружаем чаты

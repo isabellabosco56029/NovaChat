@@ -458,6 +458,64 @@ app.post("/chats/:chatId/messages", async (req, res) => {
   }
 });
 
+// ======= УДАЛЕНИЕ СООБЩЕНИЯ =======
+app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ ok: false, error: "Не авторизован" });
+  }
+
+  const userId = req.session.user.id;
+  const chatId = parseInt(req.params.chatId, 10);
+  const messageId = parseInt(req.params.messageId, 10);
+
+  if (!chatId || Number.isNaN(chatId)) {
+    return res.status(400).json({ ok: false, error: "Некорректный chatId" });
+  }
+
+  if (!messageId || Number.isNaN(messageId)) {
+    return res.status(400).json({ ok: false, error: "Некорректный messageId" });
+  }
+
+  try {
+    const memberCheck = await pool.query(
+      "SELECT 1 FROM chat_members WHERE chat_id = $1 AND user_id = $2 LIMIT 1;",
+      [chatId, userId]
+    );
+
+    if (memberCheck.rowCount === 0) {
+      return res
+        .status(403)
+        .json({ ok: false, error: "У вас нет доступа к этому чату" });
+    }
+
+    const deleteResult = await pool.query(
+      `
+      DELETE FROM messages
+      WHERE id = $1 AND chat_id = $2 AND author_id = $3
+      RETURNING id;
+      `,
+      [messageId, chatId, userId]
+    );
+
+    if (deleteResult.rowCount === 0) {
+      return res.status(404).json({
+        ok: false,
+        error: "Сообщение не найдено или у вас нет прав на удаление",
+      });
+    }
+
+    io.to(`chat:${chatId}`).emit("chat:delete-message", {
+      chatId,
+      messageId,
+    });
+
+    return res.json({ ok: true });
+  } catch (err) {
+    console.error("Ошибка при удалении сообщения:", err);
+    return res.status(500).json({ ok: false, error: "Ошибка сервера" });
+  }
+});
+
 // ======= ВЫХОД И УДАЛЕНИЕ АККАУНТА =======
 app.post("/logout", (req, res) => {
   req.session.destroy(() => {
