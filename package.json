@@ -1,22 +1,17 @@
 {
   "name": "novachat",
   "version": "1.0.0",
-  "description": "",
+  "description": "NovaChat messenger",
   "main": "server.js",
-"scripts": {
-  "start": "node server.js",
-}
+  "scripts": {
+    "start": "node server.js"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "type": "commonjs",
   "dependencies": {
-  "express": "^4.18.2",
-  "socket.io": "^4.7.2",
-  "express-session": "^1.17.3",
-  "bcryptjs": "^2.4.3",
-  "pg": "^8.11.0",
-  "connect-pg-simple": "^9.0.0"
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "express-session": "^1.17.3",
+    "connect-pg-simple": "^9.0.0",
+    "bcryptjs": "^2.4.3",
+    "pg": "^8.11.0"
   }
 }
