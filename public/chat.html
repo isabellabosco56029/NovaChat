@@ -107,6 +107,11 @@
   const chatSubtitleEl = document.getElementById("chat-subtitle");
   const backBtn = document.getElementById("back-to-chats");
   const deleteChatBtn = document.getElementById("delete-chat-btn");
+  
+  // Кнопка "Удалить чат" по умолчанию скрыта
+  if (deleteChatBtn) {
+    deleteChatBtn.style.display = "none";
+  }
 
   // Текущий пользователь и текущий чат
   let currentUser = null;
@@ -256,7 +261,7 @@
   }
 
   // Открытие чата (ПК и мобилка)
-  function openChat(chat) {
+   function openChat(chat) {
     currentChatId = chat.id;
 
     if (chatTitleEl) {
@@ -266,9 +271,10 @@
       chatSubtitleEl.textContent = "Личный чат. Сообщения сохраняются.";
     }
 
-    // показываем кнопку удаления чата, когда чат открыт
+    // 🔥 показываем кнопку "Удалить чат" только когда чат открыт
     if (deleteChatBtn) {
       deleteChatBtn.style.display = "inline-flex";
+      deleteChatBtn.dataset.chatId = String(chat.id);
     }
 
     // Подписываем сокет на комнату этого чата
@@ -304,9 +310,10 @@
 
       messagesDiv.innerHTML = "";
 
-      // если чатов нет — прячем кнопку "Удалить чат"
+      // нет чатов – скрываем кнопку удаления
       if (deleteChatBtn) {
         deleteChatBtn.style.display = "none";
+        deleteChatBtn.removeAttribute("data-chat-id");
       }
 
       return;
@@ -533,6 +540,12 @@
       if (chatSubtitleEl)
         chatSubtitleEl.textContent =
           "Выберите чат слева, чтобы начать переписку.";
+      
+            // скрываем "Удалить чат"
+      if (deleteChatBtn) {
+        deleteChatBtn.style.display = "none";
+        deleteChatBtn.removeAttribute("data-chat-id");
+      }
     });
   }
 
@@ -565,3 +578,4 @@
 </script>
 </body>
 </html>
+
