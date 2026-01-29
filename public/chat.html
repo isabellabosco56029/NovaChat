@@ -880,6 +880,80 @@
       document.body.classList.remove('mobile-dialog-open');
     }
   });
+
+  // Swipe-to-go-back (mobile): плавный жест вправо, чтобы вернуться к списку
+  (function() {
+    let touchStartX = 0;
+    let touchStartY = 0;
+    let touchCurrentX = 0;
+    let touching = false;
+    const chatMainEl = document.querySelector('.chat-main');
+
+    function onTouchStart(e) {
+      if (!isMobile() || !document.body.classList.contains('mobile-dialog-open')) return;
+      if (!e.touches || e.touches.length !== 1) return;
+      touching = true;
+      touchStartX = e.touches[0].clientX;
+      touchStartY = e.touches[0].clientY;
+      touchCurrentX = touchStartX;
+      if (chatMainEl) {
+        chatMainEl.classList.add('dragging');
+        chatMainEl.style.transition = 'none';
+      }
+    }
+
+    function onTouchMove(e) {
+      if (!touching) return;
+      const t = e.touches && e.touches[0];
+      if (!t) return;
+      touchCurrentX = t.clientX;
+      const dx = touchCurrentX - touchStartX;
+      const dy = t.clientY - touchStartY;
+      // если вертикальное движение больше, позволяем скролл
+      if (Math.abs(dy) > Math.abs(dx)) return;
+      // только вправо
+      const translate = Math.max(0, dx);
+      if (chatMainEl) chatMainEl.style.transform = `translateX(${translate}px)`;
+    }
+
+    function onTouchEnd() {
+      if (!touching) return;
+      touching = false;
+      if (chatMainEl) {
+        chatMainEl.classList.remove('dragging');
+        chatMainEl.style.transition = '';
+      }
+      const dx = touchCurrentX - touchStartX;
+      const threshold = Math.min(window.innerWidth * 0.18, 100); // 18% ширины или 100px
+      if (dx > threshold) {
+        // считаем это жестом назад
+        if (currentChatId) socket.emit('leave-chat', currentChatId);
+        document.body.classList.remove('mobile-dialog-open');
+        currentChatId = null;
+        currentPeerUserId = null;
+        currentPeerUsername = null;
+        if (messagesDiv) messagesDiv.innerHTML = '';
+        if (chatTitleEl) chatTitleEl.textContent = 'NovaChat';
+        if (chatSubtitleEl) chatSubtitleEl.textContent = 'Выберите чат слева, чтобы начать переписку.';
+        if (deleteChatBtn) { deleteChatBtn.style.display = 'none'; deleteChatBtn.removeAttribute('data-chat-id'); }
+        // анимированно убираем панель
+        if (chatMainEl) {
+          chatMainEl.style.transform = 'translateX(100%)';
+          setTimeout(() => { if (chatMainEl) chatMainEl.style.transform = ''; }, 220);
+        }
+      } else {
+        // откатываем обратно
+        if (chatMainEl) chatMainEl.style.transform = '';
+      }
+    }
+
+    if (chatMainEl) {
+      chatMainEl.addEventListener('touchstart', onTouchStart, { passive: true });
+      chatMainEl.addEventListener('touchmove', onTouchMove, { passive: true });
+      chatMainEl.addEventListener('touchend', onTouchEnd);
+      chatMainEl.addEventListener('touchcancel', onTouchEnd);
+    }
+  })();
 </script>
 </body>
 </html>

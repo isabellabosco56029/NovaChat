@@ -749,6 +749,7 @@ html.light .chat-item-active .chat-avatar {
     z-index: 40;
     height: 100vh;
     overflow-y: auto;
+    padding: 12px;
   }
 
   /* chat-main будет выезжать справа — off-canvas с анимацией */
@@ -759,11 +760,19 @@ html.light .chat-item-active .chat-avatar {
     bottom: 0;
     left: 0;
     margin: 8px;
+    padding: 10px;
     transform: translateX(100%);
-    transition: transform 220ms ease;
+    transition: transform 220ms cubic-bezier(.22,.9,.32,1), box-shadow 220ms;
     display: flex;
     height: calc(100vh - 16px);
     z-index: 50;
+    touch-action: pan-y;
+    will-change: transform;
+    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  }
+
+  .chat-main.dragging {
+    transition: none !important;
   }
 
   /* когда открыт диалог – наоборот */
