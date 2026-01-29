@@ -1,40 +1,60 @@
-// Theme toggle handler (safe to load with `defer`)
-(function () {
-  function updateButton(btn) {
-    if (!btn) return;
-    if (document.body.classList.contains('light')) {
-      btn.textContent = '☀️';
-      btn.classList.add('sun');
-      btn.setAttribute('aria-label', 'Светлая тема');
-    } else {
-      btn.textContent = '🌙';
-      btn.classList.remove('sun');
-      btn.setAttribute('aria-label', 'Тёмная тема');
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Вход — NovaChat</title>
+  <link rel="stylesheet" href="/style-v2.css" />
+  <script>
+    // Проверяем сохранённую тему или используем системную
+    const savedTheme = localStorage.getItem('theme');
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
+      document.body.classList.add('light');
     }
-  }
+  </script>
+  <script src="/theme-toggle.js" defer></script>
+</head>
+<body>
+  <header class="header">
+    <h1>NovaChat</h1>
+    <div class="nav-right">
+      <button id="theme-toggle" class="theme-toggle">🌙</button>
+      <nav>
+        <a href="/">Главная</a>
+        <a href="/login.html">Вход</a>
+        <a href="/register.html">Регистрация</a>
+      </nav>
+    </div>
+  </header>
 
-  function init() {
-    const btn = document.getElementById('theme-toggle');
-    if (!btn) return;
+  <main class="container">
+    <div class="auth-card">
+      <h2>Вход в NovaChat</h2>
+     <form action="/login" method="POST">
+  <div class="form-row">
+    <label for="username">Логин</label>
+    <input id="username" name="username" type="text" autocomplete="username" />
+  </div>
+  <div class="form-row">
+    <label for="password">Пароль</label>
+    <input
+      id="password"
+      name="password"
+      type="password"
+      autocomplete="current-password"
+    />
+  </div>
+  <button type="submit" class="btn-primary">Войти</button>
+</form>
+      <p class="auth-alt">
+        Нет аккаунта? <a href="/register.html">Создать</a>
+      </p>
+    </div>
+  </main>
 
-    // Установить начальное состояние кнопки
-    updateButton(btn);
-
-    btn.addEventListener('click', function () {
-      if (document.body.classList.contains('light')) {
-        document.body.classList.remove('light');
-        localStorage.setItem('theme', 'dark');
-      } else {
-        document.body.classList.add('light');
-        localStorage.setItem('theme', 'light');
-      }
-      updateButton(btn);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', init);
-  } else {
-    init();
-  }
-})();
+  <footer class="footer">
+    <p>&copy; 2026 NovaChat</p>
+  </footer>
+</body>
+</html>
