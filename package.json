@@ -1,11 +1,10 @@
 {
-  "name": "shcool",
+  "name": ""novachat",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "server.js",
 "scripts": {
   "start": "node server.js",
-  "test": "echo \"Error: no test specified\" && exit 1"
 }
   },
   "keywords": [],
@@ -20,3 +19,4 @@
   "pg": "^8.11.0",
   "connect-pg-simple": "^9.0.0"
   }
+}
