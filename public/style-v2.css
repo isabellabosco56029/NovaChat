@@ -742,23 +742,38 @@ html.light .chat-item-active .chat-avatar {
     padding: 0 8px;
   }
 
-  /* по умолчанию показываем список чатов, скрываем диалог */
+  /* по умолчанию показываем список чатов, скрываем диалог (off-canvas) */
   .sidebar {
     display: flex;
+    position: relative;
+    z-index: 40;
+    height: 100vh;
+    overflow-y: auto;
   }
 
+  /* chat-main будет выезжать справа — off-canvas с анимацией */
   .chat-main {
-    display: none;
+    position: fixed;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    margin: 8px;
+    transform: translateX(100%);
+    transition: transform 220ms ease;
+    display: flex;
+    height: calc(100vh - 16px);
+    z-index: 50;
   }
 
   /* когда открыт диалог – наоборот */
+  /* когда открыт диалог — прячем список и показываем чат (с анимацией) */
   body.mobile-dialog-open .sidebar {
     display: none;
   }
 
   body.mobile-dialog-open .chat-main {
-    display: flex;
-    height: calc(100vh - 16px);
+    transform: translateX(0);
   }
 
   /* на мобиле показываем кнопку "Чаты" */

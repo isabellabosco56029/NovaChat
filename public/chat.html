@@ -873,6 +873,13 @@
   loadCurrentUser().then(() => {
     loadChats();
   });
+
+  // Убираем mobile-dialog-open при ресайзе до десктопа, чтобы не застревало
+  window.addEventListener('resize', () => {
+    if (!isMobile() && document.body.classList.contains('mobile-dialog-open')) {
+      document.body.classList.remove('mobile-dialog-open');
+    }
+  });
 </script>
 </body>
 </html>
