@@ -580,7 +580,6 @@ form input[type="password"] {
     display: none;
   }
 
-<<<<<<< HEAD
 /* ===== Тёмная и светлая тема ===== */
 
 /* Тёмная тема по умолчанию уже задана стилями выше */
@@ -690,107 +689,33 @@ body.light .theme-toggle:hover {
   }
 }
 
-=======
-/* ===== Тёмная и светлая тема ===== */
-
-/* Тёмная тема по умолчанию уже задана стилями выше */
-
-body {
-  background: radial-gradient(circle at top, #020617 0, #020617 40%, #000 100%);
-  color: #e5e7eb;
+/* Chat selection colors */
+.chat-item-active {
+  background: #0f172a;
 }
 
-/* Светлая тема */
-body.light {
-  background: #f8fafc;
-  color: #020617;
-}
-
-body.light .header,
-body.light .sidebar,
-body.light .chat-main,
-body.light .auth-card {
-  background: #ffffff;
-  border-color: #e2e8f0;
-  color: #020617;
-}
-
-body.light .current-user,
-body.light .chat-main-input input {
+/* Ensure hover is sensible in light theme */
+body.light .chat-item:hover {
   background: #f1f5f9;
-  border-color: #e2e8f0;
+}
+
+/* In light theme the selected chat should be light (not black) */
+body.light .chat-item-active {
+  background: #eef2f7;
   color: #020617;
 }
 
-body.light .message {
-  background: #e5e7eb;
-  color: #020617;
-}
-
-body.light .message.me {
-  background: #3b82f6;
-  color: #eff6ff;
-}
-
-body.light .btn-primary,
-body.light .btn-secondary,
-body.light .btn-ghost {
-  filter: brightness(1.1);
-}
-
-body.light .preview-window {
-  border-color: #cbd5e1;
-}
-
-body.light .preview-msg.left {
-  background: #e2e8f0;
-}
-
-body.light .preview-msg.right {
-  background: #2563eb;
-}
-
-/* Стили для кнопки переключения темы */
-.theme-toggle {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  border: 2px solid #334155;
-  background: transparent;
+body.light .chat-item-active .chat-avatar {
+  background: #111827;
   color: #e5e7eb;
-  font-size: 18px;
-  cursor: pointer;
-  transition: all 0.2s ease;
 }
 
-.theme-toggle:hover {
+/* Keep dark-theme avatar readable */
+.chat-item-active .chat-avatar {
   background: #1f2937;
-  border-color: #4b5563;
+  color: #e5e7eb;
 }
 
-.theme-toggle.sun {
-  background: #fbbf24;
-  border-color: #f59e0b;
-  color: #78350f;
-}
-
-.theme-toggle.sun:hover {
-  background: #f59e0b;
-}
-
-/* Адаптив для кнопки темы */
-@media (max-width: 640px) {
-  .theme-toggle {
-    width: 36px;
-    height: 36px;
-    font-size: 16px;
-  }
-}
-
->>>>>>> ccaeb1390b85e5b944d8315ab3751efa57aa59d3
 /* ===== Тёмная/светлая тема через body.light ===== */
 
 body.light {
