@@ -325,6 +325,9 @@ app.post("/chats/new", async (req, res) => {
       `,
       [chatId, myId, otherId]
     );
+    
+     // 🔥 говорим всем подключённым клиентам: список чатов изменился
+    io.emit("chats:updated");
 
     res.json({
       ok: true,
@@ -546,6 +549,7 @@ app.post("/delete-account", async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
