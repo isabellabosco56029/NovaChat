@@ -616,6 +616,26 @@ app.get("/api/block-status/:userId", async (req, res) => {
   }
 });
 
+// Проверить заблокирован ли я этим пользователем
+app.get("/api/am-i-blocked/:userId", async (req, res) => {
+  if (!req.session.user) {
+    return res.status(401).json({ ok: false, error: "Не авторизирован" });
+  }
+
+  try {
+    const { userId } = req.params;
+    const result = await pool.query(
+      "SELECT 1 FROM blocked_users WHERE blocker_id = $1 AND blocked_id = $2 LIMIT 1;",
+      [userId, req.session.user.id]
+    );
+
+    return res.json({ ok: true, amBlocked: result.rowCount > 0 });
+  } catch (err) {
+    console.error("Ошибка при проверке блокировки:", err);
+    return res.status(500).json({ ok: false, error: "Ошибка сервера" });
+  }
+});
+
 // Заблокировать пользователя
 app.post("/api/block-user/:userId", async (req, res) => {
   if (!req.session.user) {
@@ -636,6 +656,9 @@ app.post("/api/block-user/:userId", async (req, res) => {
       "INSERT INTO blocked_users (blocker_id, blocked_id) VALUES ($1, $2) ON CONFLICT DO NOTHING;",
       [blockerId, userId]
     );
+
+    // Отправляем уведомление всем клиентам о блокировке
+    io.emit("user:blocked", { blockerId: parseInt(blockerId), blockedId: parseInt(userId) });
 
     return res.json({ ok: true, isBlocked: true });
   } catch (err) {
@@ -658,6 +681,9 @@ app.post("/api/unblock-user/:userId", async (req, res) => {
       "DELETE FROM blocked_users WHERE blocker_id = $1 AND blocked_id = $2;",
       [blockerId, userId]
     );
+
+    // Отправляем уведомление всем клиентам о разблокировке
+    io.emit("user:unblocked", { blockerId: parseInt(blockerId), unblockedId: parseInt(userId) });
 
     return res.json({ ok: true, isBlocked: false });
   } catch (err) {

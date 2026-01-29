@@ -144,6 +144,8 @@
   // Текущий пользователь и текущий чат
   let currentUser = null;
   let currentChatId = null;
+  let currentPeerUserId = null;
+  let amBlockedInCurrentChat = false; // заблокирован ли я в текущем чате
 
   // Проверка: мобильный ли экран
   function isMobile() {
@@ -170,9 +172,9 @@
       })
       .then((data) => {
         if (!data) return;
-        currentUser = data.username;
+        currentUser = data;
         if (currentUsernameSpan) {
-          currentUsernameSpan.textContent = currentUser;
+          currentUsernameSpan.textContent = currentUser.username;
         }
       })
       .catch(() => {
@@ -192,7 +194,7 @@
       el.dataset.messageId = msg.id;
     }
 
-    const isMe = msg.author === currentUser;
+    const isMe = msg.author === currentUser?.username;
     if (isMe) {
       el.classList.add("me");
     }
@@ -314,9 +316,65 @@
     // Загружаем историю сообщений
     loadMessages(chat.id);
 
+    // Проверяем заблокирован ли я этим пользователем
+    checkIfBlocked();
+
     // На телефоне переключаемся в режим "диалога"
     if (isMobile()) {
       document.body.classList.add("mobile-dialog-open");
+    }
+  }
+
+  // Проверить заблокирован ли я этим пользователем
+  function checkIfBlocked() {
+    if (!currentPeerUserId) {
+      amBlockedInCurrentChat = false;
+      updateInputBlockedStatus();
+      return;
+    }
+
+    fetch(`/api/am-i-blocked/${currentPeerUserId}`)
+      .then(res => res.json())
+      .then(data => {
+        if (!data.ok) throw new Error(data.error);
+        amBlockedInCurrentChat = data.amBlocked;
+        updateInputBlockedStatus();
+      })
+      .catch(err => console.error('Ошибка при проверке блокировки:', err));
+  }
+
+  // Обновить UI в зависимости от статуса блокировки
+  function updateInputBlockedStatus() {
+    if (!form) return;
+
+    if (amBlockedInCurrentChat) {
+      // Скрыть форму ввода и показать сообщение о блокировке
+      form.style.display = 'none';
+      
+      if (!document.getElementById('blocked-message')) {
+        const blockedMsg = document.createElement('div');
+        blockedMsg.id = 'blocked-message';
+        blockedMsg.style.cssText = `
+          padding: 12px 14px;
+          background: rgba(239, 68, 68, 0.1);
+          border: 1px solid #ef4444;
+          border-radius: 10px;
+          color: #ef4444;
+          text-align: center;
+          font-size: 14px;
+          margin-top: 8px;
+        `;
+        blockedMsg.textContent = 'Вы заблокированы. Не можете отправлять сообщения.';
+        form.parentNode.insertBefore(blockedMsg, form);
+      }
+    } else {
+      // Показать форму ввода и удалить сообщение о блокировке
+      form.style.display = 'flex';
+      
+      const blockedMsg = document.getElementById('blocked-message');
+      if (blockedMsg) {
+        blockedMsg.remove();
+      }
     }
   }
 
@@ -602,6 +660,30 @@
     }
   });
 
+  // Обработка события блокировки пользователя
+  socket.on("user:blocked", (data) => {
+    if (!data) return;
+    const { blockerId, blockedId } = data;
+    
+    // Если я был заблокирован - обновляю статус
+    if (blockerId === currentPeerUserId && blockedId === currentUser?.id) {
+      amBlockedInCurrentChat = true;
+      updateInputBlockedStatus();
+    }
+  });
+
+  // Обработка события разблокировки пользователя
+  socket.on("user:unblocked", (data) => {
+    if (!data) return;
+    const { blockerId, unblockedId } = data;
+    
+    // Если я был разблокирован - обновляю статус
+    if (blockerId === currentPeerUserId && unblockedId === currentUser?.id) {
+      amBlockedInCurrentChat = false;
+      updateInputBlockedStatus();
+    }
+  });
+
   // ===== ПРОФИЛЬ ПОЛЬЗОВАТЕЛЯ =====
   const profileModal = document.getElementById('profile-modal');
   const profileClose = document.getElementById('profile-close');
@@ -610,9 +692,6 @@
   const profileAvatar = document.getElementById('profile-avatar');
   const profileBlockBtn = document.getElementById('profile-block-btn');
   const profileDeleteChatBtn = document.getElementById('profile-delete-chat-btn');
-
-  let currentPeerUserId = null;
-  let currentPeerUsername = null;
 
   // Открыть профиль по клику на имя пользователя
   if (chatTitleBtn) {
@@ -686,6 +765,8 @@
         // Обновить кнопку
         if (data.isBlocked !== undefined) {
           loadBlockStatus();
+          // Также обновить статус "заблокирован ли я"
+          checkIfBlocked();
         }
       } catch (err) {
         alert('Ошибка сервера');
