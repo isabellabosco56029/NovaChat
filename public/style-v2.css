@@ -701,8 +701,31 @@ body.light .message.me {
 .msg-delete-btn:hover {
   color: #fca5a5;
  }
+  
+  html, body {
+  height: 100%;
+  margin: 0;
+}
+
+.app {
+  min-height: 100vh;
+  display: flex;
+}
+
+.chat-main {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.chat-main-messages {
+  flex: 1;
+  overflow-y: auto;
+}
 
 }
+
 
 
 
