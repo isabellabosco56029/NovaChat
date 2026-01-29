@@ -6,43 +6,14 @@
   <title>NovaChat — чат</title>
   <link rel="stylesheet" href="/style-v2.css" />
   <script>
-<<<<<<< HEAD
-    // Инициализация темы и привязка кнопки после загрузки DOM
-    document.addEventListener('DOMContentLoaded', () => {
-      const savedTheme = localStorage.getItem('theme');
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-
-      if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
-        document.body.classList.add('light');
-      }
-
-      const themeToggle = document.getElementById('theme-toggle');
-      if (themeToggle) {
-        // Установить корректный значок при старте
-        themeToggle.textContent = document.body.classList.contains('light') ? '☀️' : '🌙';
-
-        themeToggle.addEventListener('click', () => {
-          if (document.body.classList.contains('light')) {
-            document.body.classList.remove('light');
-            localStorage.setItem('theme', 'dark');
-            themeToggle.textContent = '🌙';
-          } else {
-            document.body.classList.add('light');
-            localStorage.setItem('theme', 'light');
-            themeToggle.textContent = '☀️';
-          }
-        });
-      }
-    });
-=======
     // Проверяем сохранённую тему или используем системную
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
     if (savedTheme === 'light' || (!savedTheme && !prefersDark)) {
       document.body.classList.add('light');
     }
->>>>>>> ccaeb1390b85e5b944d8315ab3751efa57aa59d3
   </script>
+  <script src="/theme-toggle.js" defer></script>
 </head>
 <body>
   <div class="app">
