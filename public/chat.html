@@ -72,12 +72,7 @@
   <section id="messages" class="chat-main-messages"></section>
 
   <form id="chat-form" class="chat-main-input">
-    <input
-      id="message-input"
-      type="text"
-      placeholder="Напишите сообщение..."
-      autocomplete="off"
-    />
+    <input id="message-input" type="text" placeholder="Напишите сообщение..." autocomplete="off"/>
     <button type="submit" class="btn-primary" id="send-btn">Отправить</button>
   </form>
 </main>
@@ -297,71 +292,67 @@
   }
 
   // ===== Создание нового чата =====
-  if (newChatBtn) {
-    newChatBtn.addEventListener("click", async () => {
-      const username = prompt(
-        "Введите логин пользователя, с которым хотите чат:"
-      );
-      if (!username) return;
+ if (newChatBtn) {
+  newChatBtn.addEventListener("click", () => {
+    const username = prompt(
+      "Введите логин пользователя, с которым хотите чат:"
+    );
+    if (!username) return;
 
-      try {
-        const res = await fetch("/chats/new", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ username: username.trim() }),
-        });
-        const data = await res.json();
+    fetch("/chats/new", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ username: username.trim() }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
         if (!data.ok) {
           alert(data.error || "Не удалось создать чат");
           return;
         }
-
-        await loadChats();
-
-        // сразу переключаемся на этот чат
-        const targetId = data.chatId;
-        const targetItem = document.querySelector(
-          `.chat-item[data-chat-id="${targetId}"]`
-        );
-        if (targetItem) targetItem.click();
-      } catch (e) {
-        console.error(e);
+        loadChats(); // обновляем список
+      })
+      .catch(() => {
         alert("Ошибка сервера при создании чата");
-      }
-    });
-  }
+      });
+  });
+}
 
-  // ===== Отправка сообщения =====
-  if (form && input) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-      const text = input.value.trim();
-      if (!text) return;
+// Отправить сообщение
+if (form && input) {
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text) return;
 
-      if (!currentChatId) {
-        alert("Сначала выберите чат слева или создайте новый.");
-        return;
-      }
+    if (!currentChatId) {
+      alert("Сначала выберите чат или создайте новый.");
+      return;
+    }
 
-      try {
-        const res = await fetch(`/chats/${currentChatId}/messages`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ text }),
-        });
-        const data = await res.json();
+    fetch(`/chats/${currentChatId}/messages`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ text }),
+    })
+      .then((res) => res.json())
+      .then((data) => {
         if (!data.ok) {
           alert(data.error || "Не удалось отправить сообщение");
           return;
         }
-
+        // сообщения всё равно прилетят через сокеты, но можешь сразу чистить поле
         input.value = "";
-      } catch (e) {
-        console.error(e);
+      })
+      .catch(() => {
         alert("Ошибка сервера при отправке сообщения");
-      }
-    });
-  }
+      });
+  });
+}
 
   // ===== Реальное время: получаем новые сообщения через socket.io =====
   socket.on("chat:new-message", (msg) => {
@@ -381,6 +372,7 @@
 </script>
 </body>
 </html>
+
 
 
 
