@@ -507,7 +507,7 @@ app.delete("/chats/:chatId/messages/:messageId", async (req, res) => {
       });
     }
 
-    // уведомляем всех в этом чате, что сообщение удалено
+    // 🔥 уведомляем всех участников этого чата
     io.to(`chat:${chatId}`).emit("chat:delete-message", {
       id: messageId,
       chatId,
@@ -586,6 +586,7 @@ app.post("/delete-account", async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
