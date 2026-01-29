@@ -716,37 +716,6 @@ body.light .chat-item-active .chat-avatar {
   color: #e5e7eb;
 }
 
-/* ===== Тёмная/светлая тема через body.light ===== */
-
-body.light {
-  background: #f8fafc;
-  color: #020617;
-}
-
-body.light .sidebar,
-body.light .chat-main,
-body.light .auth-card {
-  background: #ffffff;
-  color: #020617;
-}
-
-body.light .current-user,
-body.light .chat-main-input input {
-  background: #f1f5f9;
-  border-color: #e2e8f0;
-  color: #020617;
-}
-
-body.light .message {
-  background: #e5e7eb;
-  color: #020617;
-}
-
-body.light .message.me {
-  background: #3b82f6;
-  color: #eff6ff;
-}
-
 /* ===== Адаптив ===== */
 
 /* Мобильная логика переключения: список чатов <-> диалог */
