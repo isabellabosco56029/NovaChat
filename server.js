@@ -73,9 +73,7 @@ async function initDb() {
     );
   `);
 
-  // 4. Сообщения — WARNING: сейчас пересоздаётся при старте
-  await pool.query(`DROP TABLE IF EXISTS messages;`);
-
+  // 4. Сообщения — больше НЕ дропаем таблицу
   await pool.query(`
     CREATE TABLE IF NOT EXISTS messages (
       id SERIAL PRIMARY KEY,
@@ -549,6 +547,7 @@ app.post("/delete-account", async (req, res) => {
 server.listen(PORT, () => {
   console.log(`Сервер запущен на порту ${PORT}`);
 });
+
 
 
 
