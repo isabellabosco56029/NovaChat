@@ -42,6 +42,9 @@
 
       <!-- Кнопки управления профилем -->
       <div class="profile-actions">
+        <button id="back-to-chats-profile" class="btn-secondary" style="width: 100%; margin-bottom: 10px;">
+          ← Вернуться к чатам
+        </button>
         <form action="/logout" method="POST">
           <button type="submit" class="btn-secondary" style="width: 100%; margin: 10px 0;">
             Выйти
@@ -123,10 +126,18 @@
         });
     }
 
-    // Кнопка "← Чаты"
+    // Кнопка "�� Чаты"
     if (backBtn) {
       backBtn.addEventListener("click", () => {
         window.location.href = "/chat";
+      });
+    }
+
+    // Кнопка "Вернуться к чатам" в профиле
+    const backToChatsProfileBtn = document.getElementById('back-to-chats-profile');
+    if (backToChatsProfileBtn) {
+      backToChatsProfileBtn.addEventListener('click', () => {
+        window.location.href = '/chat';
       });
     }
 

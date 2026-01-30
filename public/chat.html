@@ -112,7 +112,6 @@
       </div>
       <h2 id="profile-username">Имя пользователя</h2>
       <div class="profile-actions">
-        <button id="profile-back-to-chats" class="btn-secondary" style="width: 100%; margin-bottom: 8px;">← Вернуться к чатам</button>
         <button id="profile-block-btn" class="btn-ghost" style="width: 100%;">Заблокировать</button>
         <button id="profile-delete-chat-btn" class="btn-ghost" style="width: 100%; margin-top: 8px;">Удалить чат</button>
       </div>
@@ -796,40 +795,7 @@
     });
   }
 
-  // Кнопка "Вернуться к чатам"
-  const profileBackToChatsBtn = document.getElementById('profile-back-to-chats');
-  if (profileBackToChatsBtn) {
-    profileBackToChatsBtn.addEventListener('click', () => {
-      // Выходим из комнаты чата
-      if (currentChatId) {
-        socket.emit('leave-chat', currentChatId);
-      }
 
-      // Сбрасываем состояние
-      currentChatId = null;
-      currentPeerUserId = null;
-      currentPeerUsername = null;
-      messagesDiv.innerHTML = '';
-
-      if (chatTitleEl) chatTitleEl.textContent = 'NovaChat';
-      if (chatSubtitleEl) chatSubtitleEl.textContent = 'Выберите чат слева, чтобы начать переписку.';
-
-      // Скрываем кнопку "Удалить чат"
-      if (deleteChatBtn) {
-        deleteChatBtn.style.display = 'none';
-        deleteChatBtn.removeAttribute('data-chat-id');
-      }
-
-      // Закрываем модальное окно профиля
-      profileModal.classList.remove('show');
-
-      // На мобильном убираем режим диалога
-      document.body.classList.remove('mobile-dialog-open');
-
-      // Перезагружаем список чатов
-      loadChats();
-    });
-  }
 
   // Клик за пределы модали
   profileModal.addEventListener('click', (e) => {
