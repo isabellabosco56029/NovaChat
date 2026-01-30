@@ -1,3 +1,66 @@
+/* ===== Модальное окно профиля ===== */
+.profile-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.55);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.profile-modal.show {
+  display: flex;
+}
+.profile-modal-content {
+  background: #111827;
+  border-radius: 18px;
+  padding: 32px 24px 24px 24px;
+  min-width: 320px;
+  min-height: 220px;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.45);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.profile-modal-close {
+  position: absolute;
+  top: 12px;
+  left: 12px;
+  background: #fff;
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 1;
+}
+.profile-avatar-container {
+  margin-bottom: 12px;
+}
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #22c55e, #22d3ee);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+  color: #fff;
+  font-weight: 700;
+}
+.profile-actions {
+  width: 100%;
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
 *,
 *::before,
 *::after {
