@@ -111,23 +111,20 @@
     <div class="profile-modal-content">
       <button class="profile-modal-close" id="profile-close">✕</button>
       <div class="profile-avatar-container">
-        <div class="profile-avatar" id="profile-avatar">?</div>
+        <div class="profile-avatar" id="profile-avatar"></div>
       </div>
-      <h2 id="profile-username">Имя пользователя</h2>
+      <h2 id="profile-username"></h2>
       <div class="profile-actions">
         <button id="profile-block-btn" class="btn-ghost" style="width: 100%;">Заблокировать</button>
         <button id="profile-delete-chat-btn" class="btn-ghost" style="width: 100%; margin-top: 8px;">Удалить чат</button>
       </div>
-    </div>
-  </div>
-  </div>
+	</div>
 
-  <footer class="footer">
-    <p>&copy; 2026 NovaChat</p>
-  </footer>
+
 
   <script src="/socket.io/socket.io.js"></script>
 <script>
+document.addEventListener('DOMContentLoaded', function() {
   const socket = io();
 
   // DOM-элементы
@@ -144,13 +141,13 @@
   const chatSubtitleEl = document.getElementById("chat-subtitle");
   const backBtn = document.getElementById("back-to-chats");
   const deleteChatBtn = document.getElementById("delete-chat-btn");
-  
+
   // 🔥 Автоскролл к последнему сообщению
   function scrollMessagesToBottom() {
     if (!messagesDiv) return;
     messagesDiv.scrollTop = messagesDiv.scrollHeight;
   }
-  
+
   // Кнопка "Удалить чат" по умолчанию скрыта
   if (deleteChatBtn) {
     deleteChatBtn.style.display = "none";
@@ -176,7 +173,7 @@
     });
   }
 
-  // Загружаем инфу о текущем пользователе
+  // Загружаем инфу о текущем пользователе и обновляем интерфейс
   function loadCurrentUser() {
     return fetch("/me")
       .then((res) => {
@@ -190,14 +187,14 @@
         if (!data) return;
         currentUser = data;
         if (currentUsernameSpan) {
-          currentUsernameSpan.textContent = currentUser.username;
+          currentUsernameSpan.textContent = currentUser.username || "?";
         }
         // Добавляем обработчик клика для перехода в профиль
         const profileLink = document.getElementById("profile-link");
         if (profileLink) {
-          profileLink.addEventListener("click", () => {
+          profileLink.onclick = () => {
             window.location.href = "/profile.html";
-          });
+          };
         }
       })
       .catch(() => {
@@ -892,7 +889,8 @@
   }
 
   // Инициализация
-  loadChats();
-  updateEmptyState();
-  
+  loadCurrentUser().then(() => {
+    loadChats();
+    updateEmptyState();
+  });
 });
